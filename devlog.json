@@ -1,0 +1,40 @@
+{
+  "games": [
+    {
+      "slug": "bloodtubies",
+      "name": "Bloodtubies I",
+      "updates": [
+        {
+          "version": "0.0.1",
+          "date": "2026-11-05",
+          "title": "Devlog is live",
+          "paragraphs": [
+            "Updates for Bloodtubies I will show up here, with screenshots and clips from each build."
+          ],
+          "media": [
+            {
+              "type": "image",
+              "src": "assets/bloodtubies/updates/0.0.1/01-key-art.png",
+              "alt": "Devlog is live"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "decadent",
+      "name": "Decadent",
+      "updates": [
+        {
+          "version": "0.0.1",
+          "date": "2026-11-05",
+          "title": "Development has started",
+          "paragraphs": [
+            "Decadent is in development. Updates will show up here."
+          ],
+          "media": []
+        }
+      ]
+    }
+  ]
+}
