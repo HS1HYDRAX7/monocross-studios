@@ -1,0 +1,7 @@
+{
+  "name": "monocross-studios",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-devlog.mjs"
+  }
+}
