@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Monocross admin</title>
+<style>
+:root{--red:#ff3b3f;--bg:#070707;--card:#101010;--tx:#f4f4f4;--mu:#8c8c8c;--ln:rgba(255,255,255,.1)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 Inter,system-ui,sans-serif;min-height:100vh}
+main{max-width:760px;margin:0 auto;padding:32px 18px 80px}
+h1{font:900 42px/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;margin:0}
+h1 b{color:var(--red);font-weight:900}
+h2{font:800 26px/1 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:20px;padding:24px;margin-top:20px}
+label{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);margin:16px 0 6px}
+input,select,textarea{width:100%;font:inherit;color:var(--tx);background:#0a0a0a;border:1px solid var(--ln);border-radius:12px;padding:12px 14px}
+textarea{min-height:170px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--red);outline-offset:1px}
+.grid{display:grid;gap:12px;grid-template-columns:1fr}
+@media (min-width:600px){.grid{grid-template-columns:1fr 1fr}}
+button{font:700 15px/1 Inter,sans-serif;min-height:48px;padding:0 22px;border-radius:999px;border:0;background:var(--red);color:#070707;cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}
+button.ghost{background:transparent;color:var(--tx);border:1px solid var(--ln)}
+button.danger{background:transparent;color:var(--red);border:1px solid rgba(255,59,63,.5);min-height:36px;padding:0 14px;font-size:13px}
+.row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.hint{font-size:13px;color:var(--mu);margin-top:8px}
+.status{margin-top:16px;font:13px/1.5 'JetBrains Mono',ui-monospace,monospace;color:#cfcfcf;min-height:20px;white-space:pre-wrap}
+.status.err{color:var(--red)}
+.item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--ln)}
+.item span{min-width:0;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<main>
+  <h1>Mono<b>cross</b> admin</h1>
+
+  <section class="card" id="loginCard" hidden>
+    <h2>Log in</h2>
+    <form id="loginForm">
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <div style="margin-top:20px"><button type="submit">Log in</button></div>
+      <p class="status err" id="loginError"></p>
+    </form>
+  </section>
+
+  <div id="panel" hidden>
+    <div class="row">
+      <span class="hint">Logged in</span>
+      <button class="ghost" id="logout" type="button">Log out</button>
+    </div>
+
+    <section class="card">
+      <h2>New update</h2>
+      <form id="updateForm">
+        <div class="grid">
+          <div><label for="game">Game</label><select id="game"></select></div>
+          <div><label for="version">Version</label><input id="version" placeholder="0.0.2" required></div>
+          <div><label for="date">Date</label><input id="date" type="date" required></div>
+          <div><label for="title">Title</label><input id="title" maxlength="120" required></div>
+        </div>
+        <label for="body">Text</label>
+        <textarea id="body" placeholder="Separate paragraphs with a blank line." required></textarea>
+        <label for="files">Images and videos</label>
+        <input id="files" type="file" accept="image/*,video/mp4,video/webm" multiple>
+        <p class="hint">Files are published in the order you select them. Up to 30 files.</p>
+        <div style="margin-top:20px"><button type="submit" id="publish">Publish update</button></div>
+      </form>
+      <p class="status" id="status"></p>
+    </section>
+
+    <section class="card">
+      <h2>Published updates</h2>
+      <div id="list"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+const GAMES = [
+  { slug: 'bloodtubies', name: 'Bloodtubies I' },
+  { slug: 'decadent', name: 'Decadent' },
+];
+
+const $ = id => document.getElementById(id);
+const loginCard = $('loginCard');
+const panel = $('panel');
+const statusEl = $('status');
+const listEl = $('list');
+
+GAMES.forEach(game => $('game').append(new Option(game.name, game.slug)));
+$('date').value = new Date().toISOString().slice(0, 10);
+
+async function api(path, options = {}) {
+  const response = await fetch(path, {
+    credentials: 'same-origin',
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Request failed (' + response.status + ')');
+  return data;
+}
+
+function say(text, isError = false) {
+  statusEl.textContent = text;
+  statusEl.className = 'status' + (isError ? ' err' : '');
+}
+
+function showLogin() {
+  loginCard.hidden = false;
+  panel.hidden = true;
+}
+
+function showPanel() {
+  loginCard.hidden = true;
+  panel.hidden = false;
+  loadList();
+}
+
+// Turns "My Photo (1).PNG" into "01-my-photo-1.png"; the number keeps the order.
+function cleanName(name, index) {
+  const dot = name.lastIndexOf('.');
+  const base = (dot > 0 ? name.slice(0, dot) : name)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'file';
+  const ext = dot > 0 ? name.slice(dot).toLowerCase().replace(/[^.a-z0-9]/g, '') : '';
+  return String(index + 1).padStart(2, '0') + '-' + base + ext;
+}
+
+// Sends one file straight to Backblaze B2 using a one-time upload URL from the server.
+async function uploadFile(game, version, file, index) {
+  const name = cleanName(file.name, index);
+  const target = await api('/api/upload-url', {
+    method: 'POST',
+    body: JSON.stringify({ game, version, name }),
+  });
+  const response = await fetch(target.uploadUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: target.authorizationToken,
+      'X-Bz-File-Name': target.fileName.split('/').map(encodeURIComponent).join('/'),
+      'Content-Type': file.type || 'b2/x-auto',
+      'X-Bz-Content-Sha1': 'do_not_verify',
+    },
+    body: file,
+  });
+  if (!response.ok) throw new Error(`Upload failed for ${file.name} (${response.status})`);
+  return { name, type: file.type.startsWith('video/') ? 'video' : 'image' };
+}
+
+$('loginForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  $('loginError').textContent = '';
+  try {
+    await api('/api/session', { method: 'POST', body: JSON.stringify({ password: $('password').value }) });
+    $('password').value = '';
+    showPanel();
+  } catch (err) {
+    $('loginError').textContent = err.message;
+  }
+});
+
+$('logout').addEventListener('click', async () => {
+  await api('/api/session', { method: 'DELETE' }).catch(() => {});
+  showLogin();
+});
+
+$('updateForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const files = [...$('files').files];
+  if (files.length > 30) return say('Up to 30 files per update.', true);
+
+  const game = $('game').value;
+  const version = $('version').value.trim();
+  const publish = $('publish');
+  publish.disabled = true;
+
+  try {
+    const media = [];
+    for (let i = 0; i < files.length; i++) {
+      say(`Uploading ${i + 1} of ${files.length}: ${files[i].name}`);
+      media.push(await uploadFile(game, version, files[i], i));
+    }
+    say('Saving update...');
+    await api('/api/updates', {
+      method: 'POST',
+      body: JSON.stringify({
+        game,
+        version,
+        title: $('title').value,
+        date: $('date').value,
+        body: $('body').value,
+        media,
+      }),
+    });
+    say('Update published.');
+    event.target.reset();
+    $('date').value = new Date().toISOString().slice(0, 10);
+    loadList();
+  } catch (err) {
+    say('Error: ' + err.message, true);
+  } finally {
+    publish.disabled = false;
+  }
+});
+
+async function loadList() {
+  listEl.textContent = 'Loading...';
+  try {
+    const data = await fetch('/api/devlog', { cache: 'no-store' }).then(r => r.json());
+    const rows = data.games.flatMap(game => game.updates.map(update => ({ game, update })));
+    listEl.replaceChildren();
+    if (!rows.length) {
+      listEl.textContent = 'No updates yet.';
+      return;
+    }
+    rows.forEach(({ game, update }) => {
+      const row = document.createElement('div');
+      row.className = 'item';
+      const text = document.createElement('span');
+      text.textContent = `${game.name} · ${update.version} · ${update.title} · ${update.date}`;
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'danger';
+      remove.textContent = 'Delete';
+      remove.addEventListener('click', async () => {
+        if (!confirm(`Delete ${game.name} ${update.version}? Its files are removed too.`)) return;
+        try {
+          await api(`/api/updates?game=${encodeURIComponent(game.slug)}&version=${encodeURIComponent(update.version)}`, { method: 'DELETE' });
+          loadList();
+        } catch (err) {
+          say('Error: ' + err.message, true);
+        }
+      });
+      row.append(text, remove);
+      listEl.append(row);
+    });
+  } catch (err) {
+    listEl.textContent = 'Could not load updates.';
+  }
+}
+
+api('/api/session')
+  .then(data => (data.admin ? showPanel() : showLogin()))
+  .catch(showLogin);
+</script>
+</body>
+</html>
