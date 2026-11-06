@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Monocross Studios</title>
+<meta name="description" content="Monocross Studios: fast, raw games built by a small team.">
+<link rel="canonical" href="https://monocross-studios.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Monocross Studios">
+<meta property="og:description" content="Fast, raw games built by a small team.">
+<meta property="og:image" content="https://monocross-studios.vercel.app/assets/bloodtubies/covers/6YEnXJtMzlVr.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#070707">
+<link rel="icon" href="assets/bloodtubies/icons/kI9uggseNTe7.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<style>
+/* ==========================================================================
+   Monocross Studios: public site
+   Extends assets/system.css (tokens, buttons, terminal, dialogs base).
+   Breakpoints: phone < 640 · tablet 640+ · small laptop 860+ · desktop 1024+ · wide 1440+
+   ========================================================================== */
+
+html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+body { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+::selection { background: var(--text); color: #070707; }
+
+.container { width: min(1200px, calc(100% - 32px)); margin-inline: auto; }
+@media (min-width: 640px) { .container { width: min(1200px, calc(100% - 48px)); } }
+@media (min-width: 1440px) { .container { width: 1280px; } }
+
+/* Lucide icons */
+svg.lucide { width: 1em; height: 1em; flex-shrink: 0; stroke-width: 1.75; vertical-align: -0.125em; }
+.btn svg.lucide { width: 18px; height: 18px; transition: transform var(--dur-2) var(--ease-out); }
+.btn:hover svg.lucide { transform: translateX(3px); }
+.btn-secondary:hover svg.lucide { transform: none; }
+.btn-lg { min-height: 56px; padding: 0 28px; font-size: 15px; }
+
+/* Entrance and scroll reveal (transform and opacity only) */
+@keyframes fade-up { from { opacity: 0; transform: translateY(14px); } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes art-in { from { opacity: 0; transform: scale(1.04); } }
+@keyframes line-up { from { transform: translateY(105%); } }
+@keyframes marquee { to { transform: translateX(-50%); } }
+.fade-in { animation: fade-up var(--dur-3) var(--ease-out) var(--d, 0s) both; }
+
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+  transition-delay: var(--d, 0s);
+}
+.js [data-reveal].in { opacity: 1; transform: none; }
+
+/* Top progress bar */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 90;
+  height: 2px; background: var(--accent);
+  transform-origin: 0 50%; transform: scaleX(0);
+  box-shadow: 0 0 12px rgba(255, 59, 63, 0.7);
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  position: fixed; inset: 0 0 auto; z-index: 80;
+  transition: background-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease), transform 0.45s var(--ease-out);
+}
+.site-header.scrolled {
+  background: rgba(7, 7, 7, 0.82);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 1px 0 var(--line);
+}
+.site-header.hide { transform: translateY(-101%); }
+.header-inner { display: flex; align-items: center; justify-content: space-between; min-height: 68px; }
+.logo {
+  font: 900 clamp(22px, 2.6vw, 26px) / 1 var(--font-display);
+  letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none;
+}
+.logo b { color: var(--accent); font-weight: 900; }
+.site-nav { display: flex; gap: clamp(20px, 3vw, 36px); }
+.site-nav a {
+  position: relative; padding: var(--space-2) 0;
+  font: 500 12px / 1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-subtle); text-decoration: none;
+  transition: color var(--dur-1) var(--ease);
+}
+.site-nav a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur-2) var(--ease-out);
+}
+.site-nav a:hover, .site-nav a[aria-current="true"] { color: var(--text); }
+.site-nav a:hover::after, .site-nav a[aria-current="true"]::after { transform: scaleX(1); }
+
+.menu-toggle {
+  position: relative; display: grid; place-items: center;
+  width: var(--touch); height: var(--touch); margin-right: -12px;
+  border: 0; background: none; color: var(--text);
+}
+.menu-toggle .ico { position: absolute; display: grid; place-items: center; transition: transform var(--dur-2) var(--ease-out), opacity var(--dur-1); }
+.menu-toggle .ico svg.lucide { width: 24px; height: 24px; }
+.menu-toggle .ico-close { opacity: 0; transform: rotate(-90deg) scale(0.6); }
+.menu-toggle[aria-expanded="true"] .ico-open { opacity: 0; transform: rotate(90deg) scale(0.6); }
+.menu-toggle[aria-expanded="true"] .ico-close { opacity: 1; transform: none; }
+
+.mobile-menu {
+  position: fixed; inset: 0; z-index: 70;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: calc(96px + env(safe-area-inset-top, 0px)) 24px calc(40px + env(safe-area-inset-bottom, 0px));
+  background: rgba(7, 7, 7, 0.97);
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--dur-2) var(--ease), visibility var(--dur-2);
+}
+.mobile-menu.open { opacity: 1; visibility: visible; }
+.mobile-menu a {
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: clamp(10px, 2.4vh, 18px) 0;
+  border-bottom: 1px solid var(--line);
+  font: 800 clamp(48px, 15vw, 80px) / 1 var(--font-display);
+  text-transform: uppercase; text-decoration: none;
+  transform: translateY(18px); opacity: 0;
+  transition: transform var(--dur-3) var(--ease-out), opacity var(--dur-3) var(--ease-out), color var(--dur-1);
+}
+.mobile-menu.open a { transform: none; opacity: 1; }
+.mobile-menu.open a:nth-child(2) { transition-delay: 0.06s; }
+.mobile-menu.open a:nth-child(3) { transition-delay: 0.12s; }
+.mobile-menu a:hover, .mobile-menu a:focus-visible { color: var(--accent); }
+.mobile-menu .mm-index { width: 2ch; font: 500 12px / 1 var(--font-mono); color: var(--text-subtle); }
+.mobile-menu .mm-label { flex: 1; }
+.mobile-menu a svg.lucide { width: 0.45em; height: 0.45em; color: var(--accent); }
+
+@media (max-width: 759px) { .site-nav { display: none; } }
+@media (min-width: 760px) { .menu-toggle, .mobile-menu { display: none; } }
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative; min-height: 100vh; min-height: 100svh;
+  display: flex; align-items: flex-end; overflow: hidden; isolation: isolate;
+  padding: calc(68px + clamp(40px, 8vh, 96px)) 0 clamp(40px, 8vh, 96px);
+}
+.hero-grid {
+  position: absolute; inset: 0; z-index: -3;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse at 72% 38%, #000 18%, transparent 70%);
+  mask-image: radial-gradient(ellipse at 72% 38%, #000 18%, transparent 70%);
+  animation: fade-in 1.4s var(--ease) both;
+}
+.hero-art {
+  position: absolute; top: 0; right: 0; z-index: -2;
+  width: min(72%, 960px); height: 100%;
+  object-fit: cover; object-position: 70% center;
+  opacity: 0.42;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 60%);
+  mask-image: linear-gradient(90deg, transparent, #000 60%);
+  animation: art-in 1.6s var(--ease) both;
+  will-change: translate;
+}
+.hero::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent 50%, var(--bg) 100%),
+    linear-gradient(90deg, var(--bg) 22%, rgba(7, 7, 7, 0.55) 60%, rgba(7, 7, 7, 0.15) 100%);
+}
+.hero-inner { position: relative; }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: 500 12px / 1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-subtle);
+}
+.eyebrow-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  animation: pulse 2.4s var(--ease) infinite;
+}
+.hero-title {
+  margin-top: var(--space-4);
+  font: 900 clamp(68px, 17vw, 236px) / 0.84 var(--font-display);
+  text-transform: uppercase;
+}
+.hero-line { display: block; overflow: hidden; padding-bottom: 0.04em; }
+.hero-line > span { display: block; animation: line-up 1.1s var(--ease) both; }
+.hero-line + .hero-line > span { animation-delay: 0.12s; }
+.hero-line.outline > span { color: transparent; -webkit-text-stroke: 1.5px var(--accent); }
+.hero-lead {
+  margin-top: var(--space-5); max-width: 44ch;
+  font-size: clamp(17px, 1.6vw, 21px); color: var(--text-muted);
+}
+.hero-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5);
+  margin: var(--space-6) 0 0; padding: 0; list-style: none;
+  font: 500 12px / 1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-subtle);
+}
+.hero-meta li { display: inline-flex; align-items: center; gap: 8px; }
+.hero-meta svg.lucide { width: 16px; height: 16px; color: var(--accent); }
+
+@media (max-width: 639px) {
+  .hero-art { width: 100%; opacity: 0.26; -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 95%); mask-image: linear-gradient(180deg, #000 30%, transparent 95%); }
+  .hero::after { background: linear-gradient(180deg, rgba(7, 7, 7, 0.2), rgba(7, 7, 7, 0.96) 70%); }
+  .hero-actions .btn { flex: 1 1 100%; }
+}
+
+/* ---------- Marquee ---------- */
+.marquee { overflow: hidden; border-block: 1px solid var(--line); background: var(--surface-sunk); }
+.marquee-track { display: flex; width: max-content; animation: marquee 32s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+.marquee-group { display: flex; flex-shrink: 0; }
+.marquee-group span {
+  display: flex; align-items: center; gap: clamp(20px, 3vw, 32px);
+  padding: clamp(14px, 2.4vw, 22px) clamp(20px, 3vw, 32px);
+  font: 800 clamp(20px, 3.2vw, 30px) / 1 var(--font-display);
+  text-transform: uppercase; white-space: nowrap; color: var(--text-muted);
+}
+.marquee-group span::after {
+  content: ""; width: 9px; height: 9px; flex-shrink: 0;
+  background: var(--accent); transform: rotate(45deg);
+}
+
+/* ---------- Sections ---------- */
+.section { position: relative; padding: clamp(72px, 11vw, 140px) 0; }
+.section-head {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end;
+  gap: var(--space-4); margin-bottom: clamp(28px, 4vw, 48px);
+}
+.section-title {
+  margin-top: var(--space-3);
+  font: 800 clamp(48px, 8vw, 104px) / 0.9 var(--font-display);
+  text-transform: uppercase;
+}
+.section-lead { max-width: 40ch; color: var(--text-muted); }
+
+/* ---------- Games ---------- */
+.game-grid { display: grid; gap: var(--space-5); }
+@media (min-width: 860px) { .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); } }
+.game-slot { min-width: 0; }
+
+.game-card {
+  position: relative; height: 100%; display: flex; flex-direction: column;
+  min-width: 0; overflow: hidden;
+  border: 1px solid var(--line); border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, #111 0%, #0b0b0b 100%);
+  transform: perspective(1000px) translateY(var(--lift, 0px)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.5s var(--ease-out), border-color 0.3s var(--ease), box-shadow 0.5s var(--ease);
+}
+.game-card::after {
+  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 59, 63, 0.16), transparent 45%);
+  opacity: 0; transition: opacity 0.4s var(--ease);
+}
+@media (hover: hover) {
+  .game-card:hover {
+    --lift: -6px;
+    border-color: rgba(255, 59, 63, 0.35);
+    box-shadow: 0 34px 60px -34px rgba(255, 59, 63, 0.45);
+  }
+  .game-card:hover::after { opacity: 1; }
+}
+.game-card.is-unavailable .slide-img { filter: grayscale(1) brightness(0.6); }
+
+.game-media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; isolation: isolate; background: var(--surface-sunk); }
+.game-media::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.6));
+}
+.slide-img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity 1s var(--ease), transform 1.8s var(--ease-out), filter 0.6s var(--ease);
+}
+.slide-img.on { opacity: 1; }
+@media (hover: hover) { .game-card:hover .slide-img.on { transform: scale(1.05); } }
+
+.dots { position: absolute; z-index: 4; right: var(--space-3); bottom: var(--space-3); display: flex; }
+.dots button { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; background: none; }
+.dots button::before {
+  content: ""; width: 18px; height: 2px; border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+  transition: background-color var(--dur-2), width var(--dur-2) var(--ease);
+}
+.dots button.on::before { width: 30px; background: var(--text); }
+
+.art-dc { position: absolute; inset: 0; background: linear-gradient(105deg, #e8e1d3 49.6%, var(--accent) 49.6%, var(--accent) 50.4%, #0b0b0b 50.4%); }
+.art-dc i { position: absolute; bottom: 0; border-radius: 999px 999px 0 0; }
+.art-dc .s { left: 22%; width: 14%; height: 58%; background: #1b1b1b; }
+.art-dc .k { right: 20%; width: 18%; height: 82%; background: #000; }
+
+.game-body { display: grid; gap: var(--space-4); padding: clamp(18px, 3vw, 28px); }
+.game-head { display: flex; align-items: center; gap: var(--space-4); min-width: 0; }
+.game-icon {
+  width: clamp(52px, 6vw, 64px); height: clamp(52px, 6vw, 64px); flex-shrink: 0;
+  border: 1px solid var(--line-strong); border-radius: var(--radius-lg);
+  object-fit: cover; background: var(--surface-sunk);
+}
+.game-name { font: 800 clamp(28px, 7.2vw, 48px) / 0.92 var(--font-display); text-transform: uppercase; overflow-wrap: anywhere; }
+.game-desc { margin-top: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 28px;
+  padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--radius-pill);
+  font: 500 11px / 1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-subtle); white-space: nowrap;
+}
+.chip svg.lucide { width: 14px; height: 14px; }
+.chip.live { border-color: rgba(255, 59, 63, 0.45); color: var(--accent); }
+.game-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.dl { display: grid; gap: var(--space-2); }
+@media (min-width: 480px) { .dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dl .btn { width: 100%; min-height: 48px; }
+.dl .btn small { font: 500 11px / 1 var(--font-mono); opacity: 0.75; }
+
+/* ---------- Updates ---------- */
+.tabs {
+  display: flex; gap: var(--space-2); margin-bottom: var(--space-6);
+  overflow-x: auto; scroll-snap-type: x proximity;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  margin-inline: calc(-1 * var(--space-1)); padding: var(--space-1);
+}
+.tabs::-webkit-scrollbar { display: none; }
+@media (min-width: 640px) { .tabs { flex-wrap: wrap; overflow: visible; } }
+.tab {
+  flex-shrink: 0; scroll-snap-align: start;
+  min-height: 46px; padding: 0 var(--space-5);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-pill);
+  background: transparent; color: var(--text-muted);
+  font: 600 var(--text-sm) / 1 var(--font-body);
+  transition: background-color var(--dur-2), color var(--dur-2), border-color var(--dur-2), transform var(--dur-1);
+}
+.tab:active { transform: scale(0.97); }
+.tab[aria-selected="true"] { background: var(--text); border-color: var(--text); color: #070707; }
+@media (hover: hover) { .tab:hover:not([aria-selected="true"]) { border-color: var(--text-subtle); color: var(--text); } }
+
+.state-error { display: grid; justify-items: start; gap: var(--space-3); padding: var(--space-5) 0; color: var(--text-muted); }
+.state-error svg.lucide { width: 28px; height: 28px; color: var(--accent); }
+
+.update-list { margin: 0; padding: 0; list-style: none; }
+.update { position: relative; padding: 0 0 var(--space-8) 34px; animation: fade-up 0.7s var(--ease-out) both; }
+.update::before {
+  content: ""; position: absolute; left: 6px; top: 16px; bottom: 0;
+  width: 1px; background: linear-gradient(180deg, var(--line-strong), transparent);
+}
+.update:last-child { padding-bottom: 0; }
+.update:last-child::before { display: none; }
+.update::after {
+  content: ""; position: absolute; left: 0; top: 6px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 4px var(--bg), 0 0 18px rgba(255, 59, 63, 0.6);
+}
+.update-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4);
+  font: 500 var(--text-xs) / 1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-subtle);
+}
+.update-meta svg.lucide { width: 14px; height: 14px; color: var(--accent); }
+.update-meta > * { display: inline-flex; align-items: center; gap: 6px; }
+.update-title {
+  margin-top: var(--space-3);
+  font: 800 clamp(30px, 4.6vw, 48px) / 1 var(--font-display);
+  text-transform: uppercase; overflow-wrap: anywhere;
+}
+.update-text { max-width: 68ch; margin-top: var(--space-3); color: var(--text-muted); }
+.update-text + .update-text { margin-top: var(--space-2); }
+.update-media { display: grid; gap: var(--space-2); margin-top: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
+.update-media figure { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-sunk); }
+.update-media figure:only-child { grid-column: 1 / -1; }
+.update-media img, .update-media video { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.update-media img { cursor: zoom-in; transition: transform var(--dur-3) var(--ease); }
+@media (hover: hover) { .update-media img:hover { transform: scale(1.03); } }
+.updates-more { margin-top: var(--space-6); }
+@media (max-width: 560px) { .updates-more .btn { width: 100%; } }
+@media (max-width: 380px) { .update-media { grid-template-columns: 1fr; } }
+
+/* ---------- Team ---------- */
+.team-list { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+@media (min-width: 640px) { .team-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } .team-row:first-child { grid-column: 1 / -1; } }
+@media (min-width: 1024px) { .team-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-5); } .team-row:first-child { grid-column: span 2; } }
+
+.team-row {
+  position: relative; display: grid; align-content: start; gap: var(--space-3);
+  padding: clamp(22px, 3vw, 32px);
+  border: 1px solid var(--line); border-radius: var(--radius-xl);
+  background: var(--surface); overflow: hidden;
+  transition: border-color 0.3s var(--ease), background-color 0.3s var(--ease);
+}
+.team-row::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform 0.7s var(--ease-out);
+}
+@media (hover: hover) {
+  .team-row:hover { border-color: rgba(255, 59, 63, 0.3); background: var(--surface-raised); }
+  .team-row:hover::before { transform: scaleX(1); }
+}
+.team-name { font: 800 clamp(42px, 5.4vw, 60px) / 1 var(--font-display); text-transform: uppercase; overflow-wrap: anywhere; }
+.team-role {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 500 var(--text-xs) / 1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-subtle);
+}
+.team-role svg.lucide { width: 15px; height: 15px; color: var(--accent); }
+.team-desc { font-size: var(--text-sm); color: var(--text-muted); }
+
+/* ---------- Footer ---------- */
+.site-footer {
+  padding: clamp(48px, 7vw, 72px) 0 calc(32px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line);
+  background: linear-gradient(180deg, transparent, rgba(255, 59, 63, 0.05));
+}
+.footer-inner {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+  gap: var(--space-5); font-size: var(--text-sm); color: var(--text-subtle);
+}
+.footer-inner nav { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+.footer-inner a { color: var(--text-muted); text-decoration: none; transition: color var(--dur-1); }
+.footer-inner a:hover { color: var(--text); }
+.to-top { display: inline-flex; align-items: center; gap: 8px; }
+.to-top svg.lucide { width: 16px; height: 16px; }
+@media (max-width: 639px) {
+  .footer-inner { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---------- Dialogs ---------- */
+dialog {
+  width: min(760px, calc(100% - 32px)); max-height: calc(100dvh - 32px);
+  margin: auto; padding: var(--space-6); overflow: auto;
+  border: 1px solid var(--line-strong); border-radius: var(--radius-xl);
+  background: var(--surface); color: var(--text);
+}
+dialog::backdrop { background: rgba(0, 0, 0, 0.74); animation: fade-in var(--dur-2) both; }
+dialog[open] { animation: dialog-in 0.4s var(--ease-out) both; }
+@keyframes dialog-in { from { opacity: 0; transform: translateY(16px) scale(0.98); } }
+.dialog-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); margin-bottom: var(--space-5); }
+.dialog-title { font: 800 var(--text-2xl) / 1 var(--font-display); text-transform: uppercase; }
+.icon-btn {
+  display: grid; place-items: center; flex-shrink: 0;
+  width: var(--touch); height: var(--touch); padding: 0;
+  border: 1px solid var(--line-strong); border-radius: var(--radius-pill);
+  background: transparent; color: var(--text);
+  transition: background-color var(--dur-1), transform var(--dur-1);
+}
+.icon-btn:hover { background: var(--surface-raised); }
+.icon-btn:active { transform: scale(0.94); }
+.icon-btn svg.lucide { width: 20px; height: 20px; }
+.lightbox { width: min(1100px, calc(100% - 24px)); padding: var(--space-3); background: #000; overflow: hidden; }
+.lightbox .lb-close { position: absolute; top: var(--space-3); right: var(--space-3); z-index: 2; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); }
+.lightbox img { width: 100%; max-height: calc(100dvh - 90px); object-fit: contain; }
+
+/* ---------- Motion preferences ---------- */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 59, 63, 0.5); }
+  70%, 100% { box-shadow: 0 0 0 9px rgba(255, 59, 63, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track, .hero-line > span, .hero-art, .hero-grid, .update, .eyebrow-dot { animation: none !important; }
+  .hero-line > span { transform: none; }
+  .js [data-reveal] { opacity: 1; transform: none; transition: none; }
+  .game-card, .team-row, .slide-img { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" id="progress" aria-hidden="true"></div>
+
+<header class="site-header" id="siteHeader">
+  <div class="container header-inner">
+    <a class="logo" href="#top" aria-label="Monocross Studios home">Mono<b>cross</b></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#games">Games</a>
+      <a href="#updates">Updates</a>
+      <a href="#team">Team</a>
+    </nav>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu">
+      <span class="ico ico-open"><i data-lucide="menu"></i></span>
+      <span class="ico ico-close"><i data-lucide="x"></i></span>
+    </button>
+  </div>
+</header>
+
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile">
+  <a href="#games"><span class="mm-index">01</span><span class="mm-label">Games</span><i data-lucide="arrow-up-right"></i></a>
+  <a href="#updates"><span class="mm-index">02</span><span class="mm-label">Updates</span><i data-lucide="arrow-up-right"></i></a>
+  <a href="#team"><span class="mm-index">03</span><span class="mm-label">Team</span><i data-lucide="arrow-up-right"></i></a>
+</nav>
+
+<main>
+  <section class="hero" id="top">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <img class="hero-art" src="assets/bloodtubies/covers/6YEnXJtMzlVr.png" alt="" aria-hidden="true">
+    <div class="container hero-inner">
+      <p class="eyebrow fade-in" style="--d: 0.1s"><span class="eyebrow-dot" aria-hidden="true"></span>Independent game studio</p>
+      <h1 class="hero-title">
+        <span class="hero-line"><span>Mono</span></span>
+        <span class="hero-line outline"><span>cross</span></span>
+      </h1>
+      <p class="hero-lead fade-in" style="--d: 0.5s">Fast, raw games made by a small team of five. Built for the edge.</p>
+      <div class="hero-actions fade-in" style="--d: 0.6s">
+        <a class="btn btn-primary btn-lg" href="#games">View games <i data-lucide="arrow-right"></i></a>
+        <a class="btn btn-secondary btn-lg" href="#updates"><i data-lucide="newspaper"></i>Latest updates</a>
+      </div>
+      <ul class="hero-meta fade-in" style="--d: 0.75s">
+        <li><i data-lucide="gamepad-2"></i>2 projects</li>
+        <li><i data-lucide="users"></i>5 team members</li>
+        <li><i data-lucide="radio"></i>Devlog live</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <div class="marquee-group">
+        <span>Bloodtubies I</span><span>Decadent</span><span>Fast</span><span>Raw</span><span>Built for the edge</span>
+      </div>
+      <div class="marquee-group">
+        <span>Bloodtubies I</span><span>Decadent</span><span>Fast</span><span>Raw</span><span>Built for the edge</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="section" id="games" aria-labelledby="games-title" data-reveal>
+    <div class="container">
+      <header class="section-head">
+        <div>
+          <p class="eyebrow">Projects</p>
+          <h2 class="section-title" id="games-title">Games</h2>
+        </div>
+        <p class="section-lead">Everything we have out, and everything we are building next.</p>
+      </header>
+
+      <div class="game-grid">
+        <div class="game-slot" data-reveal style="--d: 0s">
+          <article class="game-card is-unavailable" data-slug="bloodtubies">
+            <div class="game-media" id="btCover">
+              <img class="slide-img on" src="assets/bloodtubies/covers/aK6Y7cmhTMUO.png" alt="Bloodtubies I artwork">
+              <img class="slide-img" src="assets/bloodtubies/covers/6YEnXJtMzlVr.png" alt="">
+              <img class="slide-img" src="assets/bloodtubies/covers/vAJL3JC27iLM.png" alt="">
+              <div class="dots">
+                <button class="on" type="button" aria-label="Artwork 1"></button>
+                <button type="button" aria-label="Artwork 2"></button>
+                <button type="button" aria-label="Artwork 3"></button>
+              </div>
+            </div>
+            <div class="game-body">
+              <div class="game-head">
+                <img class="game-icon" id="tileImg" src="assets/bloodtubies/icons/kI9uggseNTe7.png" alt="">
+                <div>
+                  <h3 class="game-name">Bloodtubies I</h3>
+                  <p class="game-desc" data-desc>Horror game inspired by Slendytubbies 3.</p>
+                </div>
+              </div>
+              <div class="game-meta">
+                <span class="chip" data-state><i data-lucide="ban"></i><span>Unavailable</span></span>
+                <span class="chip"><i data-lucide="ghost"></i><span>Horror</span></span>
+              </div>
+              <div class="dl" data-slug="bloodtubies"></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="game-slot" data-reveal style="--d: 0.12s">
+          <article class="game-card is-soon" data-slug="decadent">
+            <div class="game-media">
+              <div class="art-dc" aria-hidden="true"><i class="s"></i><i class="k"></i></div>
+            </div>
+            <div class="game-body">
+              <div class="game-head">
+                <div>
+                  <h3 class="game-name">Decadent</h3>
+                  <p class="game-desc" data-desc>Asymmetric horror inspired by Dead by Daylight.</p>
+                </div>
+              </div>
+              <div class="game-meta">
+                <span class="chip live" data-state><i data-lucide="hammer"></i><span>In development</span></span>
+                <span class="chip"><i data-lucide="swords"></i><span>Asymmetric</span></span>
+              </div>
+              <div class="dl" data-slug="decadent"></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="updates" aria-labelledby="updates-title" data-reveal>
+    <div class="container">
+      <header class="section-head">
+        <div>
+          <p class="eyebrow">Devlog</p>
+          <h2 class="section-title" id="updates-title">Updates</h2>
+        </div>
+        <span class="live"><span class="spinner" id="devSpinner" hidden></span>Live</span>
+      </header>
+
+      <div class="tabs" id="devTabs" role="tablist" aria-label="Games"></div>
+
+      <div class="terminal" id="terminal" role="status" aria-label="Loading updates">
+        <div class="terminal-bar"><i></i><i></i><i></i></div>
+        <pre class="terminal-body" id="terminalText"></pre>
+      </div>
+
+      <div class="state-error" id="updatesError" hidden>
+        <i data-lucide="wifi-off"></i>
+        <p>Updates are unavailable right now.</p>
+        <button class="btn btn-secondary btn-sm" id="retryUpdates" type="button"><i data-lucide="rotate-cw"></i>Try again</button>
+      </div>
+
+      <ol class="update-list" id="updateList" hidden></ol>
+
+      <div class="updates-more" id="updatesMore" hidden>
+        <button class="btn btn-secondary" id="viewAll" type="button">View all updates <i data-lucide="arrow-right"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="team" aria-labelledby="team-title" data-reveal>
+    <div class="container">
+      <header class="section-head">
+        <div>
+          <p class="eyebrow">People</p>
+          <h2 class="section-title" id="team-title">Team</h2>
+        </div>
+        <p class="section-lead">Five people. One small studio.</p>
+      </header>
+      <ul class="team-list">
+        <li class="team-row" data-reveal style="--d: 0s">
+          <h3 class="team-name">Ranger</h3>
+          <span class="team-role"><i data-lucide="crown"></i>Owner · Voice Actor</span>
+          <p class="team-desc">Sets the direction, keeps things moving and voices the games.</p>
+        </li>
+        <li class="team-row" data-reveal style="--d: 0.08s">
+          <h3 class="team-name">Tiago</h3>
+          <span class="team-role"><i data-lucide="users"></i>Co-Owner</span>
+          <p class="team-desc">Shares decisions and day-to-day planning.</p>
+        </li>
+        <li class="team-row" data-reveal style="--d: 0.12s">
+          <h3 class="team-name">Deky</h3>
+          <span class="team-role"><i data-lucide="code"></i>Programmer</span>
+          <p class="team-desc">Turns ideas into working systems.</p>
+        </li>
+        <li class="team-row" data-reveal style="--d: 0.16s">
+          <h3 class="team-name">Matt</h3>
+          <span class="team-role"><i data-lucide="pen-tool"></i>Designer &amp; Tester</span>
+          <p class="team-desc">Designs it, tests it, makes it right.</p>
+        </li>
+        <li class="team-row" data-reveal style="--d: 0.2s">
+          <h3 class="team-name">averypngz</h3>
+          <span class="team-role"><i data-lucide="palette"></i>Artist</span>
+          <p class="team-desc">Draws the art behind our games.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <a class="logo" href="#top">Mono<b>cross</b></a>
+    <nav aria-label="Footer">
+      <a href="#games">Games</a>
+      <a href="#updates">Updates</a>
+      <a href="#team">Team</a>
+      <a class="to-top" href="#top">Back to top <i data-lucide="arrow-up"></i></a>
+    </nav>
+    <span>&copy; 2026 Monocross Studios. All rights reserved.</span>
+  </div>
+</footer>
+
+<dialog id="allUpdates" aria-labelledby="allUpdatesTitle">
+  <div class="dialog-head">
+    <h2 class="dialog-title" id="allUpdatesTitle">All updates</h2>
+    <button class="icon-btn" id="closeAll" type="button" aria-label="Close"><i data-lucide="x"></i></button>
+  </div>
+  <ol class="update-list" id="allList"></ol>
+</dialog>
+
+<dialog class="lightbox" id="lightbox">
+  <form method="dialog"><button class="icon-btn lb-close" aria-label="Close"><i data-lucide="x"></i></button></form>
+  <img id="lightboxImg" alt="">
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+<script>
+document.documentElement.classList.replace('no-js', 'js');
+
+const $ = selector => document.querySelector(selector);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+const PLATFORMS = {
+  windows: { label: 'Windows (.exe)', icon: 'monitor' },
+  android: { label: 'Android (.apk)', icon: 'smartphone' },
+};
+const MAX_HOME_UPDATES = 2;
+const TERMINAL_STATES = ['building updates', 'compiling media', 'optimizing previews'];
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+// Lucide icon placeholder; refreshIcons() swaps it for the SVG
+function iconEl(name) {
+  const node = document.createElement('i');
+  node.dataset.lucide = name;
+  node.setAttribute('aria-hidden', 'true');
+  return node;
+}
+
+function refreshIcons() {
+  if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+}
+
+function formatDate(iso) {
+  return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+// Newest first: date, then version. Works whatever order the data arrives in.
+function byNewest(a, b) {
+  return b.date.localeCompare(a.date) || b.version.localeCompare(a.version, undefined, { numeric: true });
+}
+
+// Header and mobile menu
+const header = $('#siteHeader');
+const menuToggle = $('#menuToggle');
+const mobileMenu = $('#mobileMenu');
+
+function setMenu(open) {
+  menuToggle.setAttribute('aria-expanded', String(open));
+  menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  mobileMenu.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+  if (open) header.classList.remove('hide');
+}
+menuToggle.addEventListener('click', () => setMenu(menuToggle.getAttribute('aria-expanded') !== 'true'));
+mobileMenu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenu(false)));
+document.addEventListener('keydown', event => { if (event.key === 'Escape') setMenu(false); });
+
+// Scroll: header state, hide-on-scroll-down, progress bar, hero parallax
+const progress = $('#progress');
+const heroArt = $('.hero-art');
+let lastY = scrollY;
+let ticking = false;
+
+function onScroll() {
+  ticking = false;
+  const y = scrollY;
+  const max = document.documentElement.scrollHeight - innerHeight;
+  progress.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
+  header.classList.toggle('scrolled', y > 24);
+
+  if (Math.abs(y - lastY) > 6) {
+    const menuOpen = mobileMenu.classList.contains('open');
+    header.classList.toggle('hide', y > lastY && y > 480 && !menuOpen);
+    lastY = y;
+  }
+
+  if (!reduce) heroArt.style.translate = `0 ${(Math.min(y, 1400) * 0.22).toFixed(1)}px`;
+}
+window.addEventListener('scroll', () => {
+  if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+}, { passive: true });
+onScroll();
+
+// Section highlight in the nav
+const navLinks = [...document.querySelectorAll('.site-nav a')];
+const sectionObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    navLinks.forEach(link => link.setAttribute('aria-current', String(link.getAttribute('href') === '#' + entry.target.id)));
+  });
+}, { rootMargin: '-45% 0px -50% 0px' });
+document.querySelectorAll('main section[id]').forEach(section => sectionObserver.observe(section));
+
+// Reveal on scroll
+const revealNodes = document.querySelectorAll('[data-reveal]');
+if (reduce) {
+  revealNodes.forEach(node => node.classList.add('in'));
+} else {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('in');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+  revealNodes.forEach(node => revealObserver.observe(node));
+}
+
+// Game cards: pointer spotlight and 3D tilt (fine pointers only)
+if (finePointer && !reduce) {
+  document.querySelectorAll('.game-card').forEach(card => {
+    card.addEventListener('pointermove', event => {
+      const rect = card.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      card.style.setProperty('--mx', `${(x * 100).toFixed(1)}%`);
+      card.style.setProperty('--my', `${(y * 100).toFixed(1)}%`);
+      card.style.setProperty('--rx', `${((0.5 - y) * 6).toFixed(2)}deg`);
+      card.style.setProperty('--ry', `${((x - 0.5) * 8).toFixed(2)}deg`);
+    });
+    card.addEventListener('pointerleave', () => {
+      card.style.setProperty('--rx', '0deg');
+      card.style.setProperty('--ry', '0deg');
+    });
+  });
+}
+
+// Bloodtubies: random icon on each visit, and an artwork slideshow
+$('#tileImg').src = ['assets/bloodtubies/icons/kI9uggseNTe7.png', 'assets/bloodtubies/icons/NuljmYxQzsnw.png'][Math.floor(Math.random() * 2)];
+const cover = $('#btCover');
+const slides = [...cover.querySelectorAll('.slide-img')];
+const dots = [...cover.querySelectorAll('.dots button')];
+let currentSlide = 0;
+
+function showSlide(index) {
+  currentSlide = index;
+  slides.forEach((slide, i) => slide.classList.toggle('on', i === index));
+  dots.forEach((dot, i) => dot.classList.toggle('on', i === index));
+}
+dots.forEach((dot, index) => dot.addEventListener('click', event => { event.stopPropagation(); showSlide(index); }));
+cover.addEventListener('click', () => showSlide((currentSlide + 1) % slides.length));
+if (!reduce) setInterval(() => showSlide((currentSlide + 1) % slides.length), 4500);
+
+// Game cards: status, description and download buttons come from the API
+function gameState(game) {
+  if (game.status === 'in_development') return { label: 'In development', icon: 'hammer', live: true };
+  const live = Object.values(game.platforms).some(platform => platform.available && platform.url);
+  return live
+    ? { label: 'Available', icon: 'badge-check', live: true }
+    : { label: 'Unavailable', icon: 'ban', live: false };
+}
+
+function setChip(chip, state) {
+  chip.className = 'chip' + (state.live ? ' live' : '');
+  chip.replaceChildren(iconEl(state.icon), el('span', '', state.label));
+}
+
+function disabledButton(text, icon) {
+  const node = el('span', 'btn btn-secondary btn-sm');
+  node.replaceChildren(iconEl(icon), el('span', '', text));
+  node.setAttribute('aria-disabled', 'true');
+  return node;
+}
+
+function downloadButtons(game) {
+  if (game.status === 'in_development') return [disabledButton('Coming soon', 'clock')];
+  return Object.entries(PLATFORMS).map(([key, meta]) => {
+    const platform = game.platforms[key];
+    if (platform && platform.available && platform.url) {
+      const link = el('a', 'btn btn-primary');
+      link.href = platform.url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.append(iconEl(meta.icon), el('span', '', meta.label));
+      if (platform.version) link.append(el('small', '', 'v' + platform.version));
+      return link;
+    }
+    return disabledButton(meta.label + ' unavailable', meta.icon);
+  });
+}
+
+function applyGames(list) {
+  list.forEach(game => {
+    const card = document.querySelector(`.game-card[data-slug="${game.slug}"]`);
+    if (!card) return;
+    const state = gameState(game);
+    card.classList.toggle('is-unavailable', !state.live);
+    setChip(card.querySelector('[data-state]'), state);
+    if (game.description) card.querySelector('[data-desc]').textContent = game.description;
+    card.querySelector('.dl').replaceChildren(...downloadButtons(game));
+  });
+  refreshIcons();
+}
+
+// Updates: at most two on the page, the rest in a dialog
+const tabs = $('#devTabs');
+const terminal = $('#terminal');
+const terminalText = $('#terminalText');
+const listEl = $('#updateList');
+const errorState = $('#updatesError');
+const moreWrap = $('#updatesMore');
+const viewAllButton = $('#viewAll');
+const allDialog = $('#allUpdates');
+const allList = $('#allList');
+const lightbox = $('#lightbox');
+const lightboxImg = $('#lightboxImg');
+const spinner = $('#devSpinner');
+
+let games = [];
+let activeSlug = '';
+let snapshot = '';
+let loaded = false;
+let terminalTimer = null;
+
+// Terminal loader: cosmetic progress while the data loads. It stops as soon as the data is in.
+function showTerminal(text, ready = false) {
+  terminalText.replaceChildren();
+  const prompt = el('span', 'prompt', '$ ');
+  const label = el('span', ready ? 'ok' : '', text);
+  terminalText.append(prompt, label);
+  if (!ready) terminalText.append(el('span', 'terminal-caret'));
+}
+
+function startTerminal() {
+  clearInterval(terminalTimer);
+  let index = 0;
+  showTerminal(TERMINAL_STATES[0]);
+  if (reduce) return;
+  terminalTimer = setInterval(() => {
+    index = Math.min(index + 1, TERMINAL_STATES.length - 1);
+    showTerminal(TERMINAL_STATES[index]);
+  }, 700);
+}
+
+function finishLoading() {
+  if (loaded) return;
+  loaded = true;
+  clearInterval(terminalTimer);
+  showTerminal('ready', true);
+  setTimeout(() => { terminal.hidden = true; }, 350);
+  errorState.hidden = true;
+  listEl.hidden = false;
+}
+
+function showError() {
+  clearInterval(terminalTimer);
+  terminal.hidden = true;
+  listEl.hidden = true;
+  moreWrap.hidden = true;
+  errorState.hidden = false;
+  refreshIcons();
+}
+
+function buildMedia(media, title) {
+  const figure = el('figure');
+  if (media.type === 'video') {
+    const video = document.createElement('video');
+    video.controls = true;
+    video.preload = 'metadata';
+    video.playsInline = true;
+    video.src = media.src;
+    if (media.poster) video.poster = media.poster;
+    figure.append(video);
+  } else {
+    const img = document.createElement('img');
+    img.src = media.src;
+    img.alt = media.alt || title;
+    img.loading = 'lazy';
+    figure.append(img);
+  }
+  return figure;
+}
+
+function buildUpdate(update) {
+  const item = el('li', 'update');
+  const meta = el('div', 'update-meta');
+  const time = el('time', '', formatDate(update.date));
+  time.dateTime = update.date;
+  const dateGroup = el('span');
+  dateGroup.append(iconEl('calendar'), time);
+  const versionGroup = el('span');
+  versionGroup.append(iconEl('tag'), el('span', '', 'v' + update.version));
+  meta.append(dateGroup, versionGroup);
+  item.append(meta, el('h3', 'update-title', update.title));
+  update.paragraphs.forEach(text => item.append(el('p', 'update-text', text)));
+  if (update.media.length) {
+    const grid = el('div', 'update-media');
+    update.media.forEach(media => grid.append(buildMedia(media, update.title)));
+    item.append(grid);
+  }
+  return item;
+}
+
+function renderTabs() {
+  tabs.replaceChildren(...games.map(game => {
+    const tab = el('button', 'tab', game.name);
+    tab.type = 'button';
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-selected', String(game.slug === activeSlug));
+    tab.addEventListener('click', () => {
+      activeSlug = game.slug;
+      renderTabs();
+      renderUpdates();
+    });
+    return tab;
+  }));
+}
+
+function renderUpdates() {
+  const game = games.find(entry => entry.slug === activeSlug);
+  const all = game ? [...game.updates].sort(byNewest) : [];
+  const shown = all.slice(0, MAX_HOME_UPDATES);
+
+  listEl.replaceChildren(...(all.length ? shown.map(buildUpdate) : [el('li', 'empty', 'No updates for this game yet.')]));
+  allList.replaceChildren(...all.map(buildUpdate));
+  moreWrap.hidden = all.length <= MAX_HOME_UPDATES;
+  viewAllButton.replaceChildren(document.createTextNode(`View all updates (${all.length}) `), iconEl('arrow-right'));
+  refreshIcons();
+}
+
+async function loadUpdates(first = false) {
+  spinner.hidden = false;
+  try {
+    const response = await fetch('/api/devlog', { cache: 'no-store' });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Could not load updates.');
+
+    const next = JSON.stringify(data.games);
+    if (next !== snapshot) {
+      snapshot = next;
+      games = data.games;
+      if (!games.some(game => game.slug === activeSlug)) activeSlug = games.length ? games[0].slug : '';
+      renderTabs();
+      renderUpdates();
+      applyGames(games);
+    }
+    finishLoading();
+  } catch (err) {
+    console.error('Updates could not be loaded:', err);
+    if (!loaded) showError();
+  } finally {
+    spinner.hidden = true;
+  }
+}
+
+viewAllButton.addEventListener('click', () => allDialog.showModal());
+$('#closeAll').addEventListener('click', () => allDialog.close());
+allDialog.addEventListener('click', event => { if (event.target === allDialog) allDialog.close(); });
+lightbox.addEventListener('click', event => { if (event.target === lightbox) lightbox.close(); });
+document.addEventListener('click', event => {
+  const img = event.target.closest && event.target.closest('.update-media img');
+  if (!img) return;
+  lightboxImg.src = img.src;
+  lightboxImg.alt = img.alt;
+  lightbox.showModal();
+});
+
+$('#retryUpdates').addEventListener('click', () => {
+  errorState.hidden = true;
+  terminal.hidden = false;
+  loaded = false;
+  startTerminal();
+  loadUpdates(true);
+});
+
+refreshIcons();
+startTerminal();
+loadUpdates(true);
+setInterval(() => { if (!document.hidden) loadUpdates(); }, 30000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) loadUpdates(); });
+</script>
+</body>
+</html>
