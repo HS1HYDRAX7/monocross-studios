@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Monocross admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/system.css">
+<style>
+html { scroll-padding-top: 80px; }
+.eyebrow { font: 500 11px / 1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-subtle); }
+
+/* Sign-in */
+.login { min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: var(--space-5); }
+.login-card { width: min(420px, 100%); display: grid; gap: var(--space-4); padding: var(--space-8) var(--space-6); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); animation: fade-up var(--dur-3) var(--ease) both; }
+@keyframes fade-up { from { opacity: 0; transform: translateY(12px); } }
+.login-title { font: 800 clamp(40px, 8vw, 52px) / 0.95 var(--font-display); text-transform: uppercase; }
+.login-lead { font-size: var(--text-sm); color: var(--text-muted); }
+.pass { position: relative; }
+.pass input { padding-right: 96px; }
+.pass .toggle { position: absolute; top: 50%; right: 4px; margin-top: -20px; }
+
+/* Layout: sidebar on desktop, drawer on smaller screens */
+.app { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 100vh; min-height: 100svh; }
+@media (min-width: 1024px) { .app { grid-template-columns: 248px minmax(0, 1fr); } }
+.scrim { position: fixed; inset: 0; z-index: 55; background: rgba(0, 0, 0, 0.6); opacity: 0; visibility: hidden; transition: opacity var(--dur-2) var(--ease), visibility var(--dur-2); }
+.scrim.open { opacity: 1; visibility: visible; }
+@media (min-width: 1024px) { .scrim { display: none; } }
+.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 60; width: min(280px, 88vw); display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-5) var(--space-3); padding-bottom: calc(var(--space-5) + var(--safe-bottom, 0px)); background: var(--surface-sunk); border-right: 1px solid var(--line); transform: translateX(-100%); visibility: hidden; transition: transform var(--dur-2) var(--ease-out), visibility var(--dur-2); }
+.sidebar.open { transform: none; visibility: visible; }
+@media (min-width: 1024px) { .sidebar { position: sticky; top: 0; width: auto; height: 100vh; height: 100dvh; transform: none; visibility: visible; padding: var(--space-6) var(--space-4); } }
+.brand { padding: 0 var(--space-2); font: 900 24px / 1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+.brand b { color: var(--accent); font-weight: 900; }
+.brand small { display: block; margin-top: 6px; font: 500 10px / 1 var(--font-mono); letter-spacing: 0.16em; color: var(--text-subtle); }
+.nav { display: grid; gap: 2px; }
+.nav a { display: flex; align-items: center; min-height: var(--touch); padding: 0 var(--space-3); border-radius: var(--radius-md); color: var(--text-muted); font: 500 var(--text-sm) / 1 var(--font-body); text-decoration: none; transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease); }
+.nav a:hover { background: var(--surface); color: var(--text); }
+.nav a[aria-current="page"] { background: var(--surface-raised); color: var(--text); box-shadow: inset 2px 0 0 var(--accent); }
+.sidebar-foot { margin-top: auto; display: grid; gap: var(--space-3); }
+.main { min-width: 0; display: flex; flex-direction: column; }
+.topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--space-3); min-height: 60px; padding: var(--space-2) var(--space-4); background: rgba(7, 7, 7, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+@media (min-width: 1024px) { .topbar { display: none; } }
+.menu-btn { display: grid; place-content: center; gap: 5px; width: var(--touch); height: var(--touch); margin-left: -12px; border: 0; background: none; color: var(--text); }
+.menu-btn span { display: block; width: 22px; height: 2px; border-radius: 2px; background: currentColor; }
+.topbar-title { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: 700 var(--text-xl) / 1 var(--font-display); text-transform: uppercase; }
+.content { width: 100%; max-width: 920px; margin: 0 auto; padding: var(--space-5) var(--space-4) calc(var(--space-10) + var(--safe-bottom, 0px)); }
+@media (min-width: 768px) { .content { padding: var(--space-8) var(--space-6) var(--space-10); } }
+@media (max-width: 380px) { .content { padding-inline: var(--space-3); } }
+
+/* Page structure */
+.page-head { display: grid; gap: var(--space-2); margin-bottom: var(--space-5); }
+.page-title { font: 800 clamp(32px, 5vw, 48px) / 0.95 var(--font-display); text-transform: uppercase; }
+.page-lead { max-width: 58ch; font-size: var(--text-sm); color: var(--text-muted); line-height: 1.55; }
+.view { display: grid; gap: var(--space-5); }
+.view.enter { animation: fade-up var(--dur-3) var(--ease-out) both; }
+@media (max-width: 480px) { .view { gap: var(--space-4); } .page-head { margin-bottom: var(--space-4); } }
+.panel { display: grid; gap: var(--space-4); min-width: 0; padding: var(--space-5); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+@media (min-width: 768px) { .panel { padding: var(--space-5) var(--space-6); } }
+@media (max-width: 480px) { .panel { padding: var(--space-4); border-radius: var(--radius-md); } }
+.panel-title { font: 700 var(--text-xl) / 1 var(--font-display); text-transform: uppercase; letter-spacing: 0.01em; }
+.panel + .panel { margin-top: 0; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+@media (max-width: 520px) { .stats { grid-template-columns: 1fr; } }
+@media (min-width: 521px) and (max-width: 719px) { .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); } }
+.stat { min-width: 0; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-sunk); }
+@media (max-width: 520px) { .stat { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); } .stat b { font-size: 28px; } .stat span { margin-top: 0; text-align: right; } }
+.stat b { display: block; font: 800 clamp(28px, 4vw, 40px) / 1 var(--font-display); }
+.stat span { display: block; margin-top: var(--space-2); font-size: var(--text-xs); color: var(--text-subtle); }
+.latest { font-size: var(--text-sm); color: var(--text-muted); overflow-wrap: anywhere; }
+.quick { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.plain { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.plain li { display: grid; gap: var(--space-1); padding: var(--space-3) 0; border-bottom: 1px solid var(--line); font-size: var(--text-sm); color: var(--text-muted); overflow-wrap: anywhere; }
+.plain time { font: 500 var(--text-xs) / 1 var(--font-mono); color: var(--text-subtle); }
+.plain li.empty { padding: var(--space-3) 0; border: 0; color: var(--text-subtle); }
+.step { margin-top: var(--space-2); font: 600 var(--text-xs) / 1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-subtle); }
+.form-grid { display: grid; gap: var(--space-4); }
+@media (min-width: 640px) { .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: var(--space-3); margin-top: var(--space-2); }
+@media (max-width: 639px) { .actions { flex-direction: column-reverse; align-items: stretch; } .actions .btn { width: 100%; } }
+.toolbar { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: stretch; }
+.toolbar > * { flex: 1 1 140px; min-width: 0; }
+.toolbar input[type="search"] { flex: 2 1 200px; }
+.toolbar .btn { flex: 0 0 auto; min-width: auto; }
+@media (max-width: 560px) {
+  .toolbar { flex-direction: column; }
+  .toolbar > * { flex: 1 1 auto; width: 100%; }
+  .toolbar .btn { width: 100%; }
+}
+#gamesBox { display: grid; gap: var(--space-4); }
+
+/* Games */
+.game-admin { display: grid; gap: var(--space-4); min-width: 0; padding: var(--space-5); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-sunk); }
+@media (max-width: 480px) { .game-admin { padding: var(--space-4); border-radius: var(--radius-md); } }
+.game-admin header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.game-admin h3 { font: 700 var(--text-xl) / 1 var(--font-display); text-transform: uppercase; }
+.plats { display: grid; gap: var(--space-3); }
+@media (min-width: 720px) { .plats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.plat { display: grid; gap: var(--space-3); min-width: 0; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.check { display: flex; align-items: center; gap: var(--space-3); min-height: var(--touch); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
+.game-admin .actions { margin-top: 0; }
+.game-admin .actions .msg { flex: 1 1 220px; margin: 0; }
+
+/* Upload */
+.drop { position: relative; display: grid; place-items: center; gap: var(--space-2); padding: var(--space-8) var(--space-4); text-align: center; border: 1.5px dashed var(--line-strong); border-radius: var(--radius-lg); background: var(--surface-sunk); color: var(--text-muted); cursor: pointer; transition: border-color var(--dur-1) var(--ease), background-color var(--dur-1) var(--ease); }
+@media (max-width: 480px) { .drop { padding: var(--space-6) var(--space-3); } }
+.drop strong { font: 700 var(--text-xl) / 1.1 var(--font-display); text-transform: uppercase; color: var(--text); }
+.drop span { max-width: 44ch; font-size: var(--text-sm); }
+.drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop:focus-within { box-shadow: var(--focus-ring); }
+.drop input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.files { display: grid; gap: var(--space-2); margin: var(--space-3) 0 0; padding: 0; list-style: none; }
+.file { display: grid; grid-template-columns: auto 56px minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-sunk); }
+.file.state-done { border-color: rgba(110, 231, 160, 0.35); }
+.file.state-failed { border-color: rgba(255, 59, 63, 0.45); }
+@media (max-width: 559px) {
+  .file { grid-template-columns: 48px minmax(0, 1fr); gap: var(--space-2); padding: var(--space-2) var(--space-3); }
+  .file .n { display: none; }
+  .file .file-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .file .file-actions .btn { flex: 1 1 auto; min-height: 40px; }
+}
+.file .n { font: 500 var(--text-xs) / 1 var(--font-mono); color: var(--text-subtle); }
+.file img, .file .thumb { width: 56px; height: 40px; object-fit: cover; display: grid; place-items: center; border-radius: var(--radius-sm); background: #000; font: 500 10px / 1 var(--font-mono); color: var(--text-subtle); }
+.file > div { min-width: 0; }
+.file span { display: block; font-size: var(--text-sm); overflow-wrap: anywhere; }
+.file small { display: block; margin-top: 2px; font-size: var(--text-xs); color: var(--text-subtle); }
+.file-error { color: #ffc2c4 !important; }
+.file-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
+.bar { display: none; height: 4px; margin-top: var(--space-3); overflow: hidden; border-radius: 99px; background: var(--line-strong); }
+.bar.on { display: block; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width var(--dur-2) var(--ease); }
+
+/* Devlog and media lists */
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-4); padding: var(--space-4) 0; border-bottom: 1px solid var(--line); }
+.item:first-child { padding-top: 0; }
+.item h3 { margin: var(--space-2) 0 var(--space-1); font: 700 var(--text-lg) / 1.2 var(--font-body); overflow-wrap: anywhere; }
+.item p { font-size: var(--text-sm); color: var(--text-subtle); }
+@media (max-width: 559px) {
+  .item { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); padding: var(--space-4) 0; }
+  .item .btn { justify-self: stretch; width: 100%; min-height: 44px; }
+}
+.media-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+@media (max-width: 420px) { .media-grid { grid-template-columns: 1fr; gap: var(--space-3); } }
+.media-card { display: grid; align-content: start; gap: var(--space-3); min-width: 0; padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-sunk); }
+.media-card img, .media-card .thumb { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: grid; place-items: center; border-radius: var(--radius-md); background: #000; font: 500 11px / 1 var(--font-mono); color: var(--text-subtle); }
+.media-info { display: grid; gap: var(--space-1); min-width: 0; }
+.media-info strong { font-size: var(--text-sm); overflow-wrap: anywhere; }
+.media-info small { font-size: var(--text-xs); color: var(--text-subtle); overflow-wrap: anywhere; }
+.media-card .btn { justify-self: start; }
+</style>
+</head>
+<body>
+
+<section class="login" id="loginView" hidden>
+  <form class="login-card" id="loginForm">
+    <span class="eyebrow">Restricted area</span>
+    <h1 class="login-title">Log in</h1>
+    <p class="login-lead">Enter the admin password to manage games, updates and media.</p>
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="pass">
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button class="btn btn-ghost btn-sm toggle" id="eye" type="button" aria-controls="password">Show</button>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" id="loginBtn" type="submit">Log in</button>
+    <div class="msg err" id="loginError" hidden></div>
+  </form>
+</section>
+
+<div class="app" id="panelView" hidden>
+  <div class="scrim" id="scrim"></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Admin navigation">
+    <div class="brand">Mono<b>cross</b><small>DEVLOG ADMIN</small></div>
+    <nav class="nav" aria-label="Sections">
+      <a href="#overview">Overview</a>
+      <a href="#games">Games</a>
+      <a href="#new-update">New update</a>
+      <a href="#devlog">Devlog</a>
+      <a href="#media">Media</a>
+    </nav>
+    <div class="sidebar-foot">
+      <span class="live">Refreshes every 30 s</span>
+      <button class="btn btn-secondary btn-block" id="logout" type="button" hidden>Log out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="topbar-title" id="topbarTitle">Overview</span>
+    </header>
+
+    <main class="content">
+      <section class="view" id="overview" data-title="Overview">
+        <header class="page-head">
+          <h1 class="page-title">Overview</h1>
+          <p class="page-lead">What is live, what needs attention, and what changed recently.</p>
+        </header>
+        <div class="panel">
+          <div class="stats" id="stats"></div>
+          <p class="latest" id="latest"></p>
+        </div>
+        <div class="panel">
+          <h2 class="panel-title">Needs attention</h2>
+          <ul class="plain" id="attention"></ul>
+        </div>
+        <div class="panel">
+          <h2 class="panel-title">Quick actions</h2>
+          <div class="quick">
+            <a class="btn btn-primary btn-sm" href="#new-update">Create update</a>
+            <a class="btn btn-secondary btn-sm" href="#games">Manage games</a>
+            <a class="btn btn-secondary btn-sm" href="#media">Browse media</a>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="panel-title">Recent activity</h2>
+          <ul class="plain" id="activity"></ul>
+        </div>
+      </section>
+
+      <section class="view" id="games" data-title="Games">
+        <header class="page-head">
+          <h1 class="page-title">Games</h1>
+          <p class="page-lead">Status, description and download links. A platform without a link shows as Unavailable on the website.</p>
+        </header>
+        <div id="gamesBox"></div>
+      </section>
+
+      <section class="view" id="new-update" data-title="New update">
+        <header class="page-head">
+          <h1 class="page-title">New update</h1>
+          <p class="page-lead">Files upload straight to storage. Your text is kept as a draft in this browser.</p>
+        </header>
+        <form class="panel" id="updateForm">
+          <div class="form-grid">
+            <div class="field"><label for="game">Game</label><select id="game"></select></div>
+            <div class="field"><label for="version">Version</label><input id="version" placeholder="0.0.2" required></div>
+            <div class="field"><label for="date">Date</label><input id="date" type="date" required></div>
+            <div class="field"><label for="title">Title</label><input id="title" maxlength="120" placeholder="What changed" required></div>
+          </div>
+          <div class="field">
+            <label for="body">Paragraphs</label>
+            <textarea id="body" placeholder="Separate paragraphs with a blank line." required></textarea>
+          </div>
+          <div class="field">
+            <span class="label">Media</span>
+            <label class="drop" id="dropZone" for="files">
+              <strong>Drop images or videos here</strong>
+              <span>or click to choose. PNG, JPG, WEBP, GIF, MP4 or WEBM. Up to 30 files, 500 MB each.</span>
+              <input id="files" type="file" accept="image/*,video/mp4,video/webm" multiple>
+            </label>
+            <p class="count" id="fileCount"></p>
+            <ol class="files" id="fileList"></ol>
+            <div class="bar" id="progressBar"><i id="progress"></i></div>
+          </div>
+          <div class="msg" id="status" hidden></div>
+          <div class="actions">
+            <button class="btn btn-ghost" type="button" id="discardDraft">Discard draft</button>
+            <button class="btn btn-primary" type="submit" id="publish">Publish update</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="view" id="devlog" data-title="Devlog">
+        <header class="page-head">
+          <h1 class="page-title">Devlog</h1>
+          <p class="page-lead">Published updates, newest first. Deleting an update also deletes its files.</p>
+        </header>
+        <div class="panel">
+          <div class="toolbar">
+            <label class="sr-only" for="search">Search updates</label>
+            <input id="search" type="search" placeholder="Search by game, version, title or date">
+            <label class="sr-only" for="filterGame">Filter by game</label>
+            <select id="filterGame"><option value="">All games</option></select>
+            <label class="sr-only" for="sortOrder">Sort updates</label>
+            <select id="sortOrder"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select>
+          </div>
+          <div id="list"></div>
+        </div>
+      </section>
+
+      <section class="view" id="media" data-title="Media">
+        <header class="page-head">
+          <h1 class="page-title">Media</h1>
+          <p class="page-lead">Every image and video stored for updates, with how many updates use each file.</p>
+        </header>
+        <div class="panel">
+          <div class="toolbar">
+            <label class="sr-only" for="mediaSearch">Search media</label>
+            <input id="mediaSearch" type="search" placeholder="Search by file name, game or version">
+            <label class="sr-only" for="mediaType">Type</label>
+            <select id="mediaType"><option value="">All types</option><option value="image">Images</option><option value="video">Videos</option></select>
+            <label class="sr-only" for="mediaSort">Sort media</label>
+            <select id="mediaSort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="largest">Largest first</option><option value="smallest">Smallest first</option></select>
+            <button class="btn btn-secondary" id="mediaRefresh" type="button">Refresh</button>
+          </div>
+          <p class="count" id="mediaCount"></p>
+          <div class="media-grid" id="mediaGrid" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+
+const $ = id => document.getElementById(id);
+const MAX_FILES = 30;
+const MAX_BYTES = 500 * 1024 * 1024;
+const REFRESH_MS = 30000;
+const DRAFT_KEY = 'monocross.admin.draft';
+const STATUS_LABELS = { released: 'Released', in_development: 'In development' };
+const PLATFORM_LABELS = { windows: 'Windows (.exe)', android: 'Android (.apk)' };
+const ACTIVITY_LABELS = { 'update.published': 'Published update', 'update.deleted': 'Deleted update', 'game.updated': 'Saved game' };
+
+let games = [];
+let publishedRows = [];
+let selected = [];
+let mediaFiles = [];
+let formDirty = false;
+let lastGamesJson = '';
+let lastListJson = '';
+let draftTimer = null;
+let draftGame = '';
+let fieldCounter = 0;
+
+function make(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return value.toFixed(unit === 0 ? 0 : 1) + ' ' + units[unit];
+}
+
+function formatDay(iso) {
+  if (!iso) return '';
+  return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function formatMoment(iso) {
+  return new Date(iso).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+async function api(path, options = {}) {
+  const response = await fetch(path, {
+    credentials: 'same-origin',
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (response.status === 401 && path !== '/api/session') {
+    showLogin();
+    throw new Error('Your session has expired. Please sign in again.');
+  }
+  if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+  return data;
+}
+
+function showMessage(target, text, type = '') {
+  const node = typeof target === 'string' ? $(target) : target;
+  node.hidden = !text;
+  node.textContent = text;
+  node.className = 'msg' + (type ? ' ' + type : '');
+}
+
+function toast(text, type = 'ok') {
+  const node = make('div', 'toast ' + type, text);
+  $('toasts').append(node);
+  setTimeout(() => {
+    node.classList.add('out');
+    setTimeout(() => node.remove(), 350);
+  }, 4200);
+}
+
+function showLogin() {
+  $('panelView').hidden = true;
+  $('logout').hidden = true;
+  $('loginView').hidden = false;
+}
+
+function showPanel() {
+  $('loginView').hidden = true;
+  $('logout').hidden = false;
+  $('panelView').hidden = false;
+  if (!$('date').value) $('date').value = today();
+  restoreDraft();
+  loadGames();
+  loadList();
+  loadActivity();
+  loadMedia();
+}
+
+function field(labelText, control) {
+  fieldCounter += 1;
+  control.id = control.id || 'field-' + fieldCounter;
+  const label = make('label', '', labelText);
+  label.htmlFor = control.id;
+  const wrap = make('div', 'field');
+  wrap.append(label, control);
+  return wrap;
+}
+
+function readPlatform(block) {
+  return {
+    available: block.querySelector('[data-field="available"]').checked,
+    url: block.querySelector('[data-field="url"]').value.trim(),
+    version: block.querySelector('[data-field="version"]').value.trim(),
+  };
+}
+
+function platformBlock(key, platform) {
+  const block = make('div', 'plat');
+  block.dataset.platform = key;
+
+  const toggle = make('label', 'check');
+  const box = make('input');
+  box.type = 'checkbox';
+  box.checked = platform.available;
+  box.dataset.field = 'available';
+  toggle.append(box, document.createTextNode(' ' + PLATFORM_LABELS[key] + ' available'));
+
+  const url = make('input');
+  url.placeholder = 'https://...';
+  url.value = platform.url;
+  url.dataset.field = 'url';
+
+  const version = make('input');
+  version.placeholder = 'Version, for example 1.0';
+  version.value = platform.version;
+  version.dataset.field = 'version';
+
+  block.append(toggle, field('Link', url), field('Version', version));
+  return block;
+}
+
+// Reads one game's form in the shape the API expects.
+function readGame(card) {
+  const platforms = {};
+  card.querySelectorAll('.plat').forEach(block => { platforms[block.dataset.platform] = readPlatform(block); });
+  return {
+    slug: card.dataset.slug,
+    status: card.querySelector('[data-field="status"]').value,
+    description: card.querySelector('[data-field="description"]').value.trim(),
+    platforms,
+  };
+}
+
+function isDirty(card) {
+  return JSON.stringify(readGame(card)) !== card.dataset.snapshot;
+}
+
+function renderGameEditor(game) {
+  const card = make('article', 'game-admin');
+  card.dataset.slug = game.slug;
+
+  const status = make('select');
+  status.dataset.field = 'status';
+  Object.entries(STATUS_LABELS).forEach(([value, label]) => status.append(new Option(label, value)));
+  status.value = game.status;
+
+  const description = make('input');
+  description.dataset.field = 'description';
+  description.maxLength = 200;
+  description.value = game.description;
+
+  const platforms = make('div', 'plats');
+  platforms.append(platformBlock('windows', game.platforms.windows), platformBlock('android', game.platforms.android));
+
+  const note = make('div', 'msg');
+  const save = make('button', 'btn btn-secondary btn-sm', 'Save ' + game.name);
+  save.type = 'button';
+  save.addEventListener('click', async () => {
+    save.disabled = true;
+    save.setAttribute('aria-busy', 'true');
+    showMessage(note, '');
+    try {
+      const body = readGame(card);
+      await api('/api/games', { method: 'POST', body: JSON.stringify(body) });
+      card.dataset.snapshot = JSON.stringify(body);
+      showMessage(note, 'Saved. The website is updated.', 'ok');
+      toast(game.name + ' saved. The website is updated.');
+    } catch (err) {
+      showMessage(note, err.message, 'err');
+      toast('Could not save ' + game.name + '.', 'err');
+    } finally {
+      save.disabled = false;
+      save.removeAttribute('aria-busy');
+    }
+  });
+
+  const actions = make('div', 'actions');
+  actions.append(note, save);
+
+  const header = make('header');
+  header.append(make('h3', '', game.name), make('span', 'tag' + (game.status === 'released' ? '' : ' off'), STATUS_LABELS[game.status]));
+
+  card.append(header, field('Status', status), field('Description', description), platforms, actions);
+  card.dataset.snapshot = JSON.stringify(readGame(card));
+  return card;
+}
+
+function showGamesNotice(box) {
+  let notice = box.querySelector('.notice');
+  if (!notice) {
+    notice = make('div', 'msg notice');
+    box.prepend(notice);
+  }
+  notice.textContent = 'The games changed on the server. Save your edits, then reload this page to see the new values.';
+  notice.hidden = false;
+}
+
+async function loadGames() {
+  const box = $('gamesBox');
+  if (!box.querySelector('.game-admin')) box.replaceChildren(make('p', 'empty', 'Loading games...'));
+  try {
+    const response = await fetch('/api/devlog', { cache: 'no-store' });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Could not load games');
+    const json = JSON.stringify(data.games || []);
+    const editors = [...box.querySelectorAll('.game-admin')];
+    if (json === lastGamesJson && editors.length) return;
+    if (editors.some(isDirty)) {
+      showGamesNotice(box);
+      return;
+    }
+    lastGamesJson = json;
+    games = data.games || [];
+    box.replaceChildren(...games.map(renderGameEditor));
+    const current = $('game').value || draftGame;
+    $('game').replaceChildren(...games.map(game => new Option(game.name, game.slug)));
+    if (current) $('game').value = current;
+  } catch (err) {
+    if (!box.querySelector('.game-admin')) box.replaceChildren(make('p', 'empty', err.message));
+  }
+}
+
+// "My Photo (1).PNG" becomes "01-my-photo-1.png". The number keeps the order.
+function cleanName(name, index) {
+  const dot = name.lastIndexOf('.');
+  const base = (dot > 0 ? name.slice(0, dot) : name)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'file';
+  const ext = dot > 0 ? name.slice(dot).toLowerCase().replace(/[^.a-z0-9]/g, '') : '';
+  return String(index + 1).padStart(2, '0') + '-' + base + ext;
+}
+
+// Sends one file straight to storage and reports progress as a fraction from 0 to 1.
+function sendToStorage(target, file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', target.uploadUrl);
+    xhr.setRequestHeader('Authorization', target.authorizationToken);
+    xhr.setRequestHeader('X-Bz-File-Name', target.fileName.split('/').map(encodeURIComponent).join('/'));
+    xhr.setRequestHeader('Content-Type', file.type || 'b2/x-auto');
+    xhr.setRequestHeader('X-Bz-Content-Sha1', 'do_not_verify');
+    xhr.upload.onprogress = event => {
+      if (event.lengthComputable) onProgress(event.loaded / event.total);
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(Object.assign(new Error('storage'), { status: xhr.status }));
+    };
+    xhr.onerror = () => reject(new TypeError('network'));
+    xhr.send(file);
+  });
+}
+
+async function uploadItem(item, game, version, index) {
+  item.state = 'uploading';
+  item.progress = 0;
+  item.error = '';
+  renderFiles();
+  try {
+    const name = cleanName(item.file.name, index);
+    const target = await api('/api/upload-url', { method: 'POST', body: JSON.stringify({ game, version, name }) });
+    await sendToStorage(target, item.file, fraction => {
+      item.progress = fraction;
+      if (item.fill) item.fill.style.width = Math.round(fraction * 100) + '%';
+    });
+    item.state = 'done';
+    item.version = version;
+    item.result = { name, type: item.file.type.startsWith('video/') ? 'video' : 'image' };
+  } catch (err) {
+    item.state = 'failed';
+    if (err instanceof TypeError) item.error = 'The browser could not reach storage. Check the CORS rule on the bucket (see README).';
+    else if (err.status) item.error = 'Unable to upload this file (storage responded ' + err.status + '). Check the file type and size, then try again.';
+    else item.error = err.message || 'Upload failed. Try again.';
+  }
+  renderFiles();
+}
+
+function retryItem(item) {
+  const version = $('version').value.trim();
+  if (!version) {
+    showMessage('status', 'Enter a version before retrying.', 'err');
+    $('version').focus();
+    return;
+  }
+  uploadItem(item, $('game').value, version, selected.indexOf(item));
+}
+
+function removeItem(item) {
+  URL.revokeObjectURL(item.url);
+  selected = selected.filter(other => other !== item);
+  formDirty = true;
+  renderFiles();
+}
+
+const FILE_STATUS = { ready: 'Ready', uploading: 'Uploading', done: 'Uploaded', failed: 'Failed' };
+
+function renderFiles() {
+  const list = $('fileList');
+  list.replaceChildren();
+  selected.forEach((item, index) => {
+    const row = make('li', 'file state-' + item.state);
+    const preview = item.file.type.startsWith('image/') ? make('img') : make('div', 'thumb', 'VIDEO');
+    if (preview.tagName === 'IMG') {
+      preview.src = item.url;
+      preview.alt = '';
+    }
+    const info = make('div');
+    info.append(
+      make('span', '', item.file.name),
+      make('small', '', formatBytes(item.file.size) + ' · ' + (item.file.type || 'unknown type') + ' · ' + FILE_STATUS[item.state]),
+    );
+    if (item.state === 'uploading') {
+      const track = make('div', 'bar on');
+      item.fill = make('i');
+      item.fill.style.width = Math.round(item.progress * 100) + '%';
+      track.append(item.fill);
+      info.append(track);
+    }
+    if (item.state === 'failed') info.append(make('small', 'file-error', item.error));
+
+    const actions = make('div', 'file-actions');
+    if (item.state === 'failed') {
+      const retry = make('button', 'btn btn-secondary btn-sm', 'Retry');
+      retry.type = 'button';
+      retry.addEventListener('click', () => retryItem(item));
+      actions.append(retry);
+    }
+    if (item.state !== 'uploading') {
+      const remove = make('button', 'btn btn-secondary btn-sm', 'Remove');
+      remove.type = 'button';
+      remove.addEventListener('click', () => removeItem(item));
+      actions.append(remove);
+    }
+    row.append(make('span', 'n', String(index + 1).padStart(2, '0')), preview, info, actions);
+    list.append(row);
+  });
+  $('fileCount').textContent = selected.length ? selected.length + ' of ' + MAX_FILES + ' files selected' : '';
+}
+
+function addFiles(fileList) {
+  const rejected = [];
+  for (const file of [...fileList]) {
+    if (selected.length >= MAX_FILES) {
+      rejected.push(file.name + ' (limit of ' + MAX_FILES + ' files)');
+      break;
+    }
+    const allowed = file.type.startsWith('image/') || file.type === 'video/mp4' || file.type === 'video/webm';
+    if (!allowed) {
+      rejected.push(file.name + ' (unsupported type)');
+      continue;
+    }
+    if (file.size > MAX_BYTES) {
+      rejected.push(file.name + ' (larger than ' + formatBytes(MAX_BYTES) + ')');
+      continue;
+    }
+    selected.push({ file, url: URL.createObjectURL(file), state: 'ready', progress: 0, error: '', result: null, version: '', fill: null });
+  }
+  if (rejected.length) showMessage('status', 'Not added: ' + rejected.join(', ') + '.', 'err');
+  if (selected.length) formDirty = true;
+  renderFiles();
+}
+
+function draftFields() {
+  return { game: $('game').value, version: $('version').value, date: $('date').value, title: $('title').value, body: $('body').value };
+}
+
+function saveDraft() {
+  const fields = draftFields();
+  if (!fields.version && !fields.title && !fields.body) {
+    clearDraft();
+    return;
+  }
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(fields));
+  } catch (err) {
+    // Storage is unavailable (private mode, for example). The draft simply is not kept.
+  }
+}
+
+function scheduleDraftSave() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(saveDraft, 500);
+}
+
+function clearDraft() {
+  clearTimeout(draftTimer);
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch (err) {
+    // Nothing to clear.
+  }
+}
+
+function restoreDraft() {
+  if ($('version').value || $('title').value || $('body').value) return;
+  let saved = null;
+  try {
+    saved = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+  } catch (err) {
+    saved = null;
+  }
+  if (!saved) return;
+  draftGame = saved.game || '';
+  if (draftGame) $('game').value = draftGame;
+  $('version').value = saved.version || '';
+  $('title').value = saved.title || '';
+  $('body').value = saved.body || '';
+  $('date').value = saved.date || today();
+  formDirty = true;
+  toast('Draft restored. Files need to be added again.');
+}
+
+function resetForm() {
+  $('updateForm').reset();
+  selected.forEach(item => URL.revokeObjectURL(item.url));
+  selected = [];
+  formDirty = false;
+  clearDraft();
+  renderFiles();
+  $('date').value = today();
+}
+
+function statBox(value, label) {
+  const box = make('div', 'stat');
+  box.append(make('b', '', String(value)), make('span', '', label));
+  return box;
+}
+
+// Numbers come straight from the devlog data. Nothing is estimated.
+function renderOverview(list) {
+  const updates = list.flatMap(game => game.updates.map(update => ({ game, update })));
+  const latest = [...updates].sort((a, b) =>
+    b.update.date.localeCompare(a.update.date) || b.update.version.localeCompare(a.update.version, undefined, { numeric: true }))[0];
+  $('stats').replaceChildren(
+    statBox(list.length, 'Games'),
+    statBox(updates.length, 'Updates'),
+    statBox(list.filter(game => game.status === 'in_development').length, 'In development'),
+  );
+  $('latest').textContent = latest
+    ? 'Latest update: ' + latest.game.name + ' ' + latest.update.version + ', "' + latest.update.title + '" (' + latest.update.date + ').'
+    : 'No updates published yet.';
+
+  const attention = [];
+  list.forEach(game => {
+    const hasLink = Object.values(game.platforms).some(platform => platform.available && platform.url);
+    if (game.status === 'released' && !hasLink) attention.push(game.name + ' is marked as released, but no download link is available.');
+    if (!game.updates.length) attention.push(game.name + ' has no updates yet.');
+  });
+  $('attention').replaceChildren(...(attention.length
+    ? attention.map(text => make('li', '', text))
+    : [make('li', 'empty', 'Nothing needs attention right now.')]));
+}
+
+function fillGameFilter(list) {
+  const select = $('filterGame');
+  if (select.options.length === list.length + 1) return;
+  const current = select.value;
+  select.replaceChildren(new Option('All games', ''), ...list.map(game => new Option(game.name, game.slug)));
+  select.value = current;
+}
+
+function renderPublished() {
+  const box = $('list');
+  const query = $('search').value.trim().toLowerCase();
+  const gameFilter = $('filterGame').value;
+  const newest = $('sortOrder').value === 'newest';
+  const rows = publishedRows
+    .filter(({ game }) => !gameFilter || game.slug === gameFilter)
+    .filter(({ game, update }) => !query || [game.name, update.version, update.title, update.date].join(' ').toLowerCase().includes(query))
+    .sort((a, b) => {
+      const order = b.update.date.localeCompare(a.update.date) || b.update.version.localeCompare(a.update.version, undefined, { numeric: true });
+      return newest ? order : -order;
+    });
+
+  box.replaceChildren();
+  if (!publishedRows.length) {
+    box.append(make('p', 'empty', 'No updates yet. Create your first update above.'));
+    return;
+  }
+  if (!rows.length) {
+    box.append(make('p', 'empty', 'No updates match these filters.'));
+    return;
+  }
+  rows.forEach(({ game, update }) => {
+    const row = make('div', 'item');
+    const text = make('div');
+    text.append(make('span', 'tag', game.name), make('h3', '', update.title), make('p', '', update.version + ' · ' + update.date));
+    const remove = make('button', 'btn btn-danger btn-sm', 'Delete');
+    remove.type = 'button';
+    remove.addEventListener('click', async () => {
+      if (!confirm('Delete ' + game.name + ' ' + update.version + '? Its files are removed too.')) return;
+      remove.disabled = true;
+      try {
+        await api('/api/updates?game=' + encodeURIComponent(game.slug) + '&version=' + encodeURIComponent(update.version), { method: 'DELETE' });
+        toast(game.name + ' ' + update.version + ' deleted.');
+        lastListJson = '';
+        loadList();
+        loadMedia();
+      } catch (err) {
+        toast(err.message, 'err');
+        remove.disabled = false;
+      }
+    });
+    row.append(text, remove);
+    box.append(row);
+  });
+}
+
+async function loadList() {
+  const box = $('list');
+  if (!box.children.length) box.replaceChildren(make('p', 'empty', 'Loading...'));
+  try {
+    const response = await fetch('/api/devlog', { cache: 'no-store' });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Could not load updates.');
+    renderOverview(data.games);
+    fillGameFilter(data.games);
+    const json = JSON.stringify(data.games);
+    if (json === lastListJson && box.children.length) return;
+    lastListJson = json;
+    publishedRows = data.games.flatMap(game => game.updates.map(update => ({ game, update })));
+    renderPublished();
+  } catch (err) {
+    box.replaceChildren(make('p', 'empty', err.message));
+  }
+}
+
+async function loadActivity() {
+  const box = $('activity');
+  try {
+    const data = await api('/api/activity');
+    box.replaceChildren();
+    if (!data.activity.length) {
+      box.append(make('li', 'empty', 'No activity yet. Publishing, deleting and saving games will appear here.'));
+      return;
+    }
+    data.activity.slice(0, 8).forEach(entry => {
+      const item = make('li');
+      const time = make('time', '', formatMoment(entry.at));
+      time.dateTime = entry.at;
+      item.append(time, make('span', '', (ACTIVITY_LABELS[entry.action] || 'Change') + ': ' + entry.detail));
+      box.append(item);
+    });
+  } catch (err) {
+    if (!box.children.length) box.replaceChildren(make('li', 'empty', err.message));
+  }
+}
+
+async function loadMedia() {
+  const grid = $('mediaGrid');
+  if (!grid.children.length) grid.replaceChildren(make('p', 'empty', 'Loading media...'));
+  try {
+    const data = await api('/api/media');
+    mediaFiles = data.files;
+    renderMedia();
+  } catch (err) {
+    grid.replaceChildren(make('p', 'empty', err.message));
+  }
+}
+
+function mediaCard(file) {
+  const card = make('article', 'media-card');
+  let thumb;
+  if (file.type.startsWith('image/')) {
+    thumb = make('img');
+    thumb.loading = 'lazy';
+    thumb.alt = 'Preview of ' + file.name;
+    thumb.src = file.url;
+  } else {
+    thumb = make('div', 'thumb', 'VIDEO');
+  }
+  const info = make('div', 'media-info');
+  info.append(
+    make('strong', '', file.name),
+    make('small', '', file.game + ' · ' + file.version + ' · ' + formatBytes(file.size)),
+    make('small', '', (file.uploadedAt ? formatMoment(file.uploadedAt) : 'Upload date unknown')),
+    make('small', '', file.usedBy ? 'Used in ' + file.usedBy + ' update' + (file.usedBy === 1 ? '' : 's') : 'Not used in any update'),
+  );
+  const open = make('a', 'btn btn-secondary btn-sm', 'Open file');
+  open.href = file.url;
+  open.target = '_blank';
+  open.rel = 'noopener';
+  card.append(thumb, info, open);
+  return card;
+}
+
+function renderMedia() {
+  const grid = $('mediaGrid');
+  const query = $('mediaSearch').value.trim().toLowerCase();
+  const type = $('mediaType').value;
+  const sort = $('mediaSort').value;
+  const files = mediaFiles
+    .filter(file => !type || file.type.startsWith(type))
+    .filter(file => !query || [file.name, file.game, file.version].join(' ').toLowerCase().includes(query))
+    .sort((a, b) => {
+      if (sort === 'largest') return b.size - a.size;
+      if (sort === 'smallest') return a.size - b.size;
+      const diff = (b.uploadedAt || 0) - (a.uploadedAt || 0);
+      return sort === 'oldest' ? -diff : diff;
+    });
+
+  $('mediaCount').textContent = mediaFiles.length ? files.length + ' of ' + mediaFiles.length + ' files' : '';
+  grid.replaceChildren();
+  if (!mediaFiles.length) {
+    grid.append(make('p', 'empty', 'No media yet. Add images or videos to an update and they will appear here.'));
+    return;
+  }
+  if (!files.length) {
+    grid.append(make('p', 'empty', 'No files match these filters.'));
+    return;
+  }
+  files.forEach(file => grid.append(mediaCard(file)));
+}
+
+function refreshPanel() {
+  if (document.hidden || $('panelView').hidden) return;
+  loadGames();
+  loadList();
+  loadActivity();
+}
+
+function onFormChange() {
+  formDirty = true;
+  scheduleDraftSave();
+}
+
+// ----- Wiring -----
+
+$('eye').addEventListener('click', () => {
+  const input = $('password');
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  $('eye').textContent = showing ? 'Show' : 'Hide';
+});
+
+$('loginForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  showMessage('loginError', '');
+  $('loginBtn').disabled = true;
+  try {
+    await api('/api/session', { method: 'POST', body: JSON.stringify({ password: $('password').value }) });
+    $('password').value = '';
+    showPanel();
+  } catch (err) {
+    showMessage('loginError', err.message, 'err');
+  } finally {
+    $('loginBtn').disabled = false;
+  }
+});
+
+$('logout').addEventListener('click', async () => {
+  await api('/api/session', { method: 'DELETE' }).catch(() => {});
+  showLogin();
+});
+
+$('files').addEventListener('change', event => {
+  addFiles(event.target.files);
+  event.target.value = '';
+});
+
+const dropZone = $('dropZone');
+['dragenter', 'dragover'].forEach(type => dropZone.addEventListener(type, event => {
+  event.preventDefault();
+  dropZone.classList.add('over');
+}));
+['dragleave', 'drop'].forEach(type => dropZone.addEventListener(type, event => {
+  event.preventDefault();
+  dropZone.classList.remove('over');
+}));
+dropZone.addEventListener('drop', event => {
+  if (event.dataTransfer && event.dataTransfer.files.length) addFiles(event.dataTransfer.files);
+});
+
+['input', 'change'].forEach(type => $('updateForm').addEventListener(type, onFormChange));
+
+$('discardDraft').addEventListener('click', () => {
+  if (!confirm('Discard this draft? The text and selected files will be cleared.')) return;
+  resetForm();
+  toast('Draft discarded.');
+});
+
+$('updateForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const game = $('game').value;
+  const version = $('version').value.trim();
+  const publish = $('publish');
+  if (!version) {
+    showMessage('status', 'Enter a version, for example 0.0.2.', 'err');
+    $('version').focus();
+    return;
+  }
+  publish.disabled = true;
+  publish.setAttribute('aria-busy', 'true');
+  showMessage('status', '');
+  $('progressBar').classList.add('on');
+  $('progress').style.width = '0%';
+  try {
+    // Files already uploaded for this version are reused. Everything else is uploaded now.
+    const pending = selected.map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.state !== 'done' || item.version !== version);
+    let finished = 0;
+    for (const { item, index } of pending) {
+      showMessage('status', 'Uploading ' + (finished + 1) + ' of ' + pending.length + ': ' + item.file.name);
+      await uploadItem(item, game, version, index);
+      finished += 1;
+      $('progress').style.width = Math.round((finished / (pending.length + 1)) * 100) + '%';
+    }
+    const failed = selected.filter(item => item.state === 'failed');
+    if (failed.length) {
+      throw new Error(failed.length + ' file(s) could not be uploaded. Retry or remove them, then publish again.');
+    }
+    showMessage('status', 'Saving update...');
+    await api('/api/updates', {
+      method: 'POST',
+      body: JSON.stringify({
+        game,
+        version,
+        title: $('title').value,
+        date: $('date').value,
+        body: $('body').value,
+        media: selected.map(item => item.result),
+      }),
+    });
+    $('progress').style.width = '100%';
+    showMessage('status', 'Update published.', 'ok');
+    toast('Update published.');
+    resetForm();
+    lastListJson = '';
+    loadList();
+    loadActivity();
+    loadMedia();
+  } catch (err) {
+    showMessage('status', 'Could not publish the update. Your text and files are still here, so you can try again. (' + err.message + ')', 'err');
+    toast('Could not publish the update.', 'err');
+  } finally {
+    publish.disabled = false;
+    publish.removeAttribute('aria-busy');
+    setTimeout(() => $('progressBar').classList.remove('on'), 1200);
+  }
+});
+
+['search', 'filterGame', 'sortOrder'].forEach(id => $(id).addEventListener(id === 'search' ? 'input' : 'change', renderPublished));
+['mediaSearch'].forEach(id => $(id).addEventListener('input', renderMedia));
+['mediaType', 'mediaSort'].forEach(id => $(id).addEventListener('change', renderMedia));
+$('mediaRefresh').addEventListener('click', loadMedia);
+
+window.addEventListener('beforeunload', event => {
+  const gamesChanged = [...document.querySelectorAll('.game-admin')].some(isDirty);
+  const uploading = selected.some(item => item.state === 'uploading');
+  if (formDirty || gamesChanged || uploading) {
+    event.preventDefault();
+    event.returnValue = '';
+  }
+});
+
+setInterval(refreshPanel, REFRESH_MS);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshPanel(); });
+
+api('/api/session')
+  .then(data => (data.admin ? showPanel() : showLogin()))
+  .catch(err => {
+    showLogin();
+    showMessage('loginError', err.message, 'err');
+  });
+
+// ----- Sections and navigation -----
+const VIEWS = ['overview', 'games', 'new-update', 'devlog', 'media'];
+const sidebar = $('sidebar');
+const scrim = $('scrim');
+const menuBtn = $('menuBtn');
+
+function setDrawer(open) {
+  sidebar.classList.toggle('open', open);
+  scrim.classList.toggle('open', open);
+  menuBtn.setAttribute('aria-expanded', String(open));
+  document.body.style.overflow = open ? 'hidden' : '';
+  if (open) sidebar.querySelector('a').focus();
+}
+menuBtn.addEventListener('click', () => setDrawer(!sidebar.classList.contains('open')));
+scrim.addEventListener('click', () => setDrawer(false));
+document.addEventListener('keydown', event => { if (event.key === 'Escape') setDrawer(false); });
+
+function showView(name) {
+  const id = VIEWS.includes(name) ? name : 'overview';
+  document.querySelectorAll('.view').forEach(view => {
+    const active = view.id === id;
+    if (view.hidden === active) {
+      view.hidden = !active;
+      if (active) {
+        view.classList.remove('enter');
+        void view.offsetWidth;
+        view.classList.add('enter');
+      }
+    }
+  });
+  document.querySelectorAll('.nav a').forEach(link => {
+    if (link.getAttribute('href') === '#' + id) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  });
+  const title = document.getElementById(id).dataset.title;
+  $('topbarTitle').textContent = title;
+  document.title = title + ' · Monocross admin';
+  setDrawer(false);
+}
+window.addEventListener('hashchange', () => showView(location.hash.slice(1)));
+showView(location.hash.slice(1));
+
+</script>
+</body>
+</html>
