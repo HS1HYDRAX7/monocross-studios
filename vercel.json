@@ -1,0 +1,4 @@
+{
+  "outputDirectory": ".",
+  "rewrites": [{ "source": "/admin", "destination": "/admin/index.html" }]
+}
