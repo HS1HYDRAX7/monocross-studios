@@ -1,0 +1,88 @@
+/* Monocross Studios v14: community links, ad slot, mobile polish. Loads after site-polish.css.
+   Motion uses transform and opacity only and stops under prefers-reduced-motion. */
+
+/* ---------- Touch and small screens ---------- */
+a, button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.container { padding-inline: max(0px, env(safe-area-inset-left)) max(0px, env(safe-area-inset-right)); }
+h1, h2, h3, p { overflow-wrap: anywhere; }
+.site-footer { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+.site-nav a, .mobile-menu a, .footer-inner nav a { min-height: 44px; display: inline-flex; align-items: center; }
+@media (max-width: 639px) {
+  .header-inner { gap: 12px; }
+  .section { padding: clamp(64px, 16vw, 88px) 0; }
+  .footer-inner nav { flex-wrap: wrap; gap: 4px 20px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .hero { min-height: 0; padding-block: 96px 56px; }
+  .mobile-menu { overflow-y: auto; }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  .container { width: min(940px, calc(100% - 48px)); }
+}
+/* Below the fold: skip layout work until it is near the screen. */
+#updates, #team, #community, .site-footer { content-visibility: auto; contain-intrinsic-size: auto 720px; }
+
+/* ---------- Header call to action ---------- */
+.header-cta { margin-left: auto; margin-right: 8px; min-height: 40px; }
+.header-cta i { width: 16px; height: 16px; }
+.site-nav { margin-left: 24px; }
+@media (max-width: 859px) { .header-cta { display: none; } .menu-toggle { margin-left: auto; } }
+
+/* ---------- Progress line under the header (browsers with scroll timelines) ---------- */
+@supports (animation-timeline: scroll()) {
+  .site-header::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--accent);
+    transform-origin: left; transform: scaleX(0); animation: v14-progress linear both; animation-timeline: scroll(root);
+  }
+  @keyframes v14-progress { to { transform: scaleX(1); } }
+}
+
+/* ---------- Ad slot ---------- */
+.ad-band { padding: 0 0 clamp(56px, 8vw, 96px); }
+.ad-band:not(:has([data-monocross-embed])) { display: none; }
+.ad-band .container { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.ad-band [data-monocross-slot] { width: 100%; }
+
+/* ---------- Community ---------- */
+.channel-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .channel-list { grid-template-columns: 1fr 1fr; gap: 24px; } }
+.channel {
+  position: relative; overflow: hidden; isolation: isolate; display: flex; align-items: center; gap: 20px;
+  min-height: 132px; padding: clamp(20px, 3vw, 32px); text-decoration: none; color: var(--text);
+  background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-xl);
+  transition: transform var(--dur-3) var(--ease-out), border-color var(--dur-2) var(--ease), background-color var(--dur-2) var(--ease);
+}
+.channel::before {
+  content: ""; position: absolute; z-index: -1; inset: -40% auto -40% -30%; width: 70%;
+  background: radial-gradient(closest-side, rgba(255, 59, 63, 0.28), transparent); opacity: 0.6;
+  transition: transform 0.8s var(--ease-out), opacity var(--dur-3) var(--ease);
+}
+.channel::after {
+  content: ""; position: absolute; z-index: -1; inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.07) 50%, transparent 60%);
+  transform: translateX(-120%); transition: transform 0.9s var(--ease-out);
+}
+@media (hover: hover) {
+  .channel:hover { transform: translateY(-4px); border-color: var(--accent); background: var(--surface-raised); }
+  .channel:hover::before { transform: translateX(60%); opacity: 1; }
+  .channel:hover::after { transform: translateX(120%); }
+  .channel:hover .channel-arrow { transform: translate(4px, -4px); color: var(--accent); }
+  .channel:hover .channel-ico { transform: rotate(-6deg) scale(1.06); }
+}
+.channel:active { transform: scale(0.99); }
+.channel-ico {
+  flex: none; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 16px;
+  background: var(--accent); color: #070707; transition: transform var(--dur-3) var(--ease-out);
+}
+.channel-ico svg { width: 30px; height: 30px; }
+.channel-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.channel-kicker { font: 500 12px / 1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+.channel-name { font: 900 clamp(34px, 5vw, 48px) / 0.95 var(--font-display); text-transform: uppercase; }
+.channel-meta { font: 500 14px / 1.3 var(--font-mono); color: var(--text-muted); overflow-wrap: anywhere; }
+.channel-arrow { flex: none; width: 28px; height: 28px; color: var(--text-muted); transition: transform var(--dur-3) var(--ease-out), color var(--dur-2) var(--ease); }
+@media (max-width: 420px) { .channel { gap: 14px; } .channel-ico { width: 52px; height: 52px; } .channel-arrow { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .channel, .channel::before, .channel::after, .channel-ico, .channel-arrow { transition: none !important; }
+  .site-header::after { animation: none !important; display: none; }
+}
