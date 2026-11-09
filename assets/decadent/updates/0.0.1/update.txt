@@ -1,4 +1,0 @@
-title: Development has started
-date: 2026-11-05
----
-Decadent is in development. Updates will show up here.
