@@ -205,7 +205,7 @@ svg.lucide { width: 1em; height: 1em; flex-shrink: 0; stroke-width: 1.75; vertic
 
 .tabbar {
   position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 50;
-  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; padding: 6px;
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; padding: 6px;
   border: 1px solid var(--line-strong); border-radius: 22px;
   background: rgba(16, 16, 16, 0.9); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   box-shadow: 0 24px 48px -20px #000;
@@ -610,6 +610,59 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); -
 .games-search svg.lucide { position:absolute; z-index:1; left:14px; top:50%; transform:translateY(-50%); color:var(--text-subtle); }
 .games-search input { padding-left:42px; }
 @media (max-width:560px) { .games-toolbar { grid-template-columns:1fr 1fr; } .games-search { grid-column:1/-1; } }
+
+/* ===== Quick actions (command palette) ===== */
+kbd {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px;
+  border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 6px;
+  background: var(--surface-raised); font: 500 10px / 1 var(--font-mono); color: var(--text-muted);
+}
+.btn kbd { margin-left: 4px; opacity: 0.75; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.overview-actions { display: flex; gap: 10px; }
+.palette {
+  width: min(560px, calc(100% - 32px)); padding: 0; overflow: hidden;
+  border-radius: 20px; text-align: left;
+}
+.palette-search { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.palette-search svg.lucide { width: 18px; height: 18px; color: var(--text-subtle); flex-shrink: 0; }
+.palette-search input { min-height: 32px; padding: 0; border: 0; background: transparent; font-size: 15px; }
+.palette-search input:focus-visible { box-shadow: none; }
+.palette-list {
+  display: grid; gap: 2px; max-height: min(46vh, 380px); margin: 0; padding: 8px;
+  list-style: none; overflow-y: auto; overscroll-behavior: contain;
+}
+.palette-list li {
+  display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px;
+  color: var(--text-muted); font-size: var(--text-sm); cursor: pointer;
+  transition: background-color var(--dur-1), color var(--dur-1);
+}
+.palette-list li svg.lucide { width: 17px; height: 17px; color: var(--text-subtle); flex-shrink: 0; transition: color var(--dur-1), transform var(--dur-2) var(--ease-out); }
+.palette-list li.active { background: var(--surface-raised); color: var(--text); }
+.palette-list li.active svg.lucide { color: var(--accent); transform: translateX(2px); }
+.palette-hint { margin-left: auto; font: 500 10px / 1 var(--font-mono); color: var(--text-subtle); }
+.palette-empty { justify-content: center; padding: 26px; color: var(--text-subtle); font-size: var(--text-sm); cursor: default; }
+.palette-empty svg.lucide { display: none; }
+.palette-foot { display: flex; flex-wrap: wrap; gap: 16px; margin: 0; padding: 12px 20px; border-top: 1px solid var(--line); }
+.palette-foot span { display: inline-flex; align-items: center; gap: 5px; font-size: var(--text-xs); color: var(--text-subtle); }
+
+/* ===== Activity page ===== */
+#activityLogList { padding-top: 6px; }
+#activityLogList .tl-item { padding: 10px 0; border-bottom: 1px solid var(--line); }
+#activityLogList .tl-item:last-child { border-bottom: 0; }
+
+/* ===== Polish: cards, buttons, stats ===== */
+.card { transition: border-color var(--dur-2); }
+@media (hover: hover) { .card:hover { border-color: var(--line-strong); } }
+.btn-primary { position: relative; overflow: hidden; }
+.btn-primary::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.28) 50%, transparent 75%);
+  transform: translateX(-130%);
+}
+@media (hover: hover) { .btn-primary:hover::after { transform: translateX(130%); transition: transform 0.8s var(--ease-out); } }
+@media (prefers-reduced-motion: reduce) { .btn-primary::after { display: none; } }
+.stat b { overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -653,8 +706,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); -
       <a href="#games" data-view="games"><i data-lucide="gamepad-2"></i>Games</a>
       <a href="#devlog" data-view="devlog"><i data-lucide="scroll-text"></i>Devlog <span class="count" data-count="updates">0</span></a>
       <a href="#media" data-view="media"><i data-lucide="images"></i>Media <span class="count" data-count="media">0</span></a>
+      <a href="#activity-log" data-view="activity-log"><i data-lucide="activity"></i>Activity</a>
     </nav>
     <div class="sidebar-foot">
+      <button class="btn btn-secondary btn-block" id="sidePalette" type="button"><i data-lucide="command"></i>Quick actions <kbd>Ctrl K</kbd></button>
       <div class="sync"><span class="pulse-dot" aria-hidden="true"></span><span id="syncText">Refreshes every 15 s</span></div>
       <button class="btn btn-secondary btn-block" id="logout" type="button"><i data-lucide="log-out"></i>Sign out</button>
     </div>
@@ -664,7 +719,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); -
     <header class="topbar">
       <div class="brand">Mono<b>cross</b></div>
       <span class="topbar-title" id="topbarTitle">Overview</span>
-      <button class="icon-btn" id="topLogout" type="button" aria-label="Sign out"><i data-lucide="log-out"></i></button>
+      <span class="topbar-actions">
+        <button class="icon-btn" id="topPalette" type="button" aria-label="Quick actions"><i data-lucide="command"></i></button>
+        <button class="icon-btn" id="topLogout" type="button" aria-label="Sign out"><i data-lucide="log-out"></i></button>
+      </span>
     </header>
 
     <main class="content">
@@ -675,6 +733,9 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); -
           <p class="eyebrow" id="todayLabel"></p>
           <h1 class="page-title">Overview</h1>
           <p class="page-lead">What is live, what needs attention, and what changed recently.</p>
+          <div class="page-actions overview-actions">
+            <button class="btn btn-secondary" id="exportBackup" type="button"><i data-lucide="download"></i>Export backup</button>
+          </div>
         </header>
 
         <div class="stat-grid">
@@ -685,6 +746,7 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); -
           <article class="stat"><div class="stat-ico"><i data-lucide="calendar-days"></i></div><b id="statUpcoming">0</b><span>Upcoming</span></article>
           <article class="stat"><div class="stat-ico"><i data-lucide="badge-check"></i></div><b id="statConfirmed">0</b><span>Confirmed</span></article>
           <article class="stat"><div class="stat-ico"><i data-lucide="clock-3"></i></div><b id="statEstimated">0</b><span>Estimated</span></article>
+          <article class="stat"><div class="stat-ico"><i data-lucide="hard-drive"></i></div><b id="statStorage">&mdash;</b><span>Stored media</span></article>
         </div>
 
         <div class="grid-2">
@@ -849,6 +911,29 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); -
         </div>
       </section>
 
+      <!-- Activity -->
+      <section class="view" id="activity-log" data-title="Activity">
+        <header class="page-head">
+          <p class="eyebrow">History</p>
+          <h1 class="page-title">Activity</h1>
+          <p class="page-lead">Everything published, edited or removed, newest first. The last 200 events are kept.</p>
+        </header>
+        <div class="card">
+          <div class="toolbar">
+            <label class="sr-only" for="activitySearch">Search activity</label>
+            <div class="search"><i data-lucide="search"></i><input id="activitySearch" type="search" placeholder="Search by action or detail" autocomplete="off"></div>
+            <div class="segmented" id="activityTypeSeg" role="group" aria-label="Event type">
+              <button type="button" data-group="" aria-pressed="true">All</button>
+              <button type="button" data-group="updates" aria-pressed="false">Updates</button>
+              <button type="button" data-group="games" aria-pressed="false">Games</button>
+              <button type="button" data-group="ads" aria-pressed="false">Ads</button>
+            </div>
+          </div>
+          <p class="count" id="activityCount"></p>
+          <ol class="timeline" id="activityLogList" aria-live="polite"></ol>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -859,6 +944,7 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); -
     <a href="#games" data-view="games"><i data-lucide="gamepad-2"></i>Games</a>
     <a href="#devlog" data-view="devlog"><i data-lucide="scroll-text"></i>Devlog</a>
     <a href="#media" data-view="media"><i data-lucide="images"></i>Media</a>
+    <a href="#activity-log" data-view="activity-log"><i data-lucide="activity"></i>Activity</a>
   </nav>
 </div>
 
@@ -972,6 +1058,15 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); -
   <img id="lbImg" alt="">
 </dialog>
 
+<dialog class="modal palette" id="palette" aria-label="Quick actions">
+  <div class="palette-search">
+    <i data-lucide="search" aria-hidden="true"></i>
+    <input id="paletteInput" type="text" placeholder="Type a command or search..." autocomplete="off" spellcheck="false">
+  </div>
+  <ol class="palette-list" id="paletteList" role="listbox" aria-label="Commands"></ol>
+  <p class="palette-foot"><span><kbd>&uarr;</kbd><kbd>&darr;</kbd> navigate</span><span><kbd>&crarr;</kbd> run</span><span><kbd>esc</kbd> close</span></p>
+</dialog>
+
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
@@ -988,8 +1083,14 @@ const PLATFORM_LABELS = { windows: 'Windows (.exe)', android: 'Android (.apk)' }
 const PLATFORM_ICONS = { windows: 'monitor', android: 'smartphone' };
 const ACTIVITY = {
   'update.published': { label: 'Published update', icon: 'send' },
+  'update.edited': { label: 'Edited update', icon: 'pencil' },
   'update.deleted': { label: 'Deleted update', icon: 'trash-2' },
+  'game.created': { label: 'Created game', icon: 'plus' },
   'game.updated': { label: 'Saved game', icon: 'gamepad-2' },
+  'game.deleted': { label: 'Deleted game', icon: 'trash-2' },
+  'ad.created': { label: 'Created ad', icon: 'megaphone' },
+  'ad.updated': { label: 'Saved ad', icon: 'megaphone' },
+  'ad.deleted': { label: 'Deleted ad', icon: 'trash-2' },
 };
 const FILE_STATUS = { ready: 'Ready', uploading: 'Uploading', done: 'Uploaded', failed: 'Failed' };
 
@@ -1005,6 +1106,8 @@ let draftGame = '';
 let fieldCounter = 0;
 let devSort = 'newest';
 let mediaType = '';
+let activityRows = [];
+let lastActivityJson = '';
 
 function make(tag, className, text) {
   const node = document.createElement(tag);
@@ -1256,11 +1359,15 @@ function gameTile(game, index) {
   body.append(head, meta, make('p', 'game-tile-desc', game.description || 'No description yet.'));
 
   const actions = make('div', 'game-tile-actions');
+  const copyId = make('button', 'btn btn-secondary btn-sm');
+  copyId.type = 'button';
+  copyId.append(iconEl('copy'), document.createTextNode('Copy ID'));
+  copyId.addEventListener('click', () => copyText(game.id, 'Game ID'));
   const edit = make('button', 'btn btn-secondary btn-sm');
   edit.type = 'button';
   edit.append(iconEl('pencil'), document.createTextNode('Edit'));
   edit.addEventListener('click', () => openGameDialog(game));
-  actions.append(edit);
+  actions.append(copyId, edit);
   body.append(actions);
   tile.append(gameMedia(game), body);
   return tile;
@@ -1976,6 +2083,8 @@ function renderOverview(list) {
     if (game.status === 'released' && !hasLink) attention.push(game.name + ' is marked as released, but no download link is available.');
     if (!game.updates.length) attention.push(game.name + ' has no updates yet.');
   });
+  const unused = mediaFiles.filter(file => !file.usedBy).length;
+  if (mediaLoaded && unused) attention.push(unused + ' unused media file' + (unused === 1 ? '' : 's') + ' in storage. Open Media to review them.');
   const attentionItems = attention.map(text => {
     const li = make('li');
     li.append(iconEl('triangle-alert'), make('span', '', text));
@@ -1990,30 +2099,59 @@ function renderOverview(list) {
   refreshIcons();
 }
 
+function activityItem(entry) {
+  const info = ACTIVITY[entry.action] || { label: 'Change', icon: 'activity' };
+  const item = make('li', 'tl-item');
+  const dot = make('span', 'tl-dot');
+  dot.append(iconEl(info.icon));
+  const text = make('div', 'tl-text');
+  const time = make('time', '', formatMoment(entry.at));
+  time.dateTime = entry.at;
+  text.append(make('strong', '', info.label), make('span', '', entry.detail), time);
+  item.append(dot, text);
+  return item;
+}
+
 async function loadActivity() {
   const box = $('activity');
   try {
     const data = await api('/api/activity');
-    if (!data.activity.length) {
-      box.replaceChildren(make('li', 'empty-state', 'No activity yet. Publishing, deleting and saving games will appear here.'));
-      return;
+    activityRows = data.activity;
+    const json = JSON.stringify(activityRows);
+    if (json !== lastActivityJson || !box.children.length) {
+      lastActivityJson = json;
+      if (!activityRows.length) {
+        box.replaceChildren(make('li', 'empty-state', 'No activity yet. Publishing, deleting and saving games will appear here.'));
+      } else {
+        box.replaceChildren(...activityRows.slice(0, 8).map(activityItem));
+      }
+      renderActivityLog();
+      refreshIcons();
     }
-    box.replaceChildren(...data.activity.slice(0, 8).map(entry => {
-      const info = ACTIVITY[entry.action] || { label: 'Change', icon: 'activity' };
-      const item = make('li', 'tl-item');
-      const dot = make('span', 'tl-dot');
-      dot.append(iconEl(info.icon));
-      const text = make('div', 'tl-text');
-      const time = make('time', '', formatMoment(entry.at));
-      time.dateTime = entry.at;
-      text.append(make('strong', '', info.label), make('span', '', entry.detail), time);
-      item.append(dot, text);
-      return item;
-    }));
-    refreshIcons();
   } catch (err) {
     if (!box.children.length) box.replaceChildren(make('li', 'empty-state', err.message));
   }
+}
+
+function renderActivityLog() {
+  const box = $('activityLogList');
+  if (!box) return;
+  const query = $('activitySearch').value.trim().toLowerCase();
+  const active = document.querySelector('#activityTypeSeg button[aria-pressed="true"]');
+  const group = active ? active.dataset.group : '';
+  const prefixes = { updates: 'update.', games: 'game.', ads: 'ad.' };
+  const filtered = activityRows
+    .filter(entry => !group || entry.action.startsWith(prefixes[group]))
+    .filter(entry => !query || [entry.action, (ACTIVITY[entry.action] || {}).label || '', entry.detail].join(' ').toLowerCase().includes(query));
+  $('activityCount').textContent = activityRows.length ? filtered.length + ' of ' + activityRows.length + ' events' : '';
+  if (!activityRows.length) {
+    box.replaceChildren(make('li', 'empty-state', 'No activity yet. Publishing, deleting and saving games will appear here.'));
+  } else if (!filtered.length) {
+    box.replaceChildren(make('li', 'empty-state', 'No events match these filters.'));
+  } else {
+    box.replaceChildren(...filtered.map(activityItem));
+  }
+  refreshIcons();
 }
 
 // ===== Devlog =====
@@ -2045,6 +2183,13 @@ function entryCard(game, update, index) {
   }
 
   const actions = make('div', 'entry-actions');
+  const copy = make('button', 'icon-btn');
+  copy.type = 'button';
+  copy.setAttribute('aria-label', 'Copy update code ' + update.id);
+  copy.title = 'Copy update code';
+  copy.append(iconEl('copy'));
+  copy.addEventListener('click', () => copyText(update.id, 'Update code'));
+
   const edit = make('button', 'icon-btn');
   edit.type = 'button';
   edit.setAttribute('aria-label', 'Edit ' + update.title);
@@ -2077,7 +2222,7 @@ function entryCard(game, update, index) {
     }
   });
 
-  actions.append(edit, remove);
+  actions.append(copy, edit, remove);
   row.append(main, actions);
   return row;
 }
@@ -2285,6 +2430,7 @@ async function loadMedia() {
     mediaLoaded = true;
     document.querySelector('[data-count="media"]').textContent = String(mediaFiles.length);
     countUp($('statMedia'), mediaFiles.length);
+    $('statStorage').textContent = formatBytes(mediaFiles.reduce((sum, file) => sum + (file.size || 0), 0));
     renderMedia();
   } catch (err) {
     grid.replaceChildren(emptyState('triangle-alert', err.message));
@@ -2469,9 +2615,8 @@ $('game').addEventListener('change', updateSummary);
 $('version').addEventListener('input', updateSummary);
 
 window.addEventListener('beforeunload', event => {
-  const gamesChanged = false;
   const uploading = selected.some(item => item.state === 'uploading');
-  if (formDirty || gamesChanged || uploading) {
+  if (formDirty || uploading) {
     event.preventDefault();
     event.returnValue = '';
   }
@@ -2481,7 +2626,7 @@ setInterval(refreshPanel, REFRESH_MS);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshPanel(); });
 
 // ===== Navigation =====
-const VIEWS = ['overview', 'games', 'new-update', 'devlog', 'media'];
+const VIEWS = ['overview', 'new-update', 'games', 'devlog', 'media', 'activity-log'];
 
 function placeIndicators() {
   document.querySelectorAll('.nav, .tabbar').forEach(nav => {
@@ -2533,6 +2678,162 @@ window.addEventListener('hashchange', () => showView(location.hash.slice(1)));
 window.addEventListener('resize', () => requestAnimationFrame(placeIndicators));
 $('todayLabel').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 showView(location.hash.slice(1));
+
+// ===== Copy to clipboard =====
+async function copyText(text, label) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(label + ' copied.');
+  } catch (err) {
+    toast('Could not copy to the clipboard.', 'err');
+  }
+}
+
+// ===== Export backup =====
+async function exportBackup() {
+  const button = $('exportBackup');
+  if (button) setBusy(button, true);
+  try {
+    const [devlogResponse, adsData] = await Promise.all([
+      fetch('/api/devlog?t=' + Date.now(), { cache: 'no-store' }),
+      api('/api/ads').catch(() => ({ ads: [] })),
+    ]);
+    const devlog = await devlogResponse.json().catch(() => ({}));
+    if (!devlogResponse.ok) throw new Error(devlog.error || 'Could not load data.');
+    const backup = {
+      exportedAt: new Date().toISOString(),
+      source: 'monocross-admin',
+      games: devlog.games || [],
+      ads: (adsData && adsData.ads) || [],
+      activity: activityRows,
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'monocross-backup-' + today() + '.json';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('Backup downloaded.');
+  } catch (err) {
+    toast(err.message, 'err');
+  } finally {
+    if (button) setBusy(button, false);
+  }
+}
+$('exportBackup').addEventListener('click', exportBackup);
+
+// ===== Quick actions (command palette) =====
+let paletteItems = [];
+let paletteIndex = 0;
+
+function paletteCommands() {
+  return [
+    { icon: 'layout-dashboard', label: 'Go to Overview', hint: '1', run: () => showView('overview') },
+    { icon: 'send', label: 'Go to Publish', hint: '2', run: () => showView('new-update') },
+    { icon: 'gamepad-2', label: 'Go to Games', hint: '3', run: () => showView('games') },
+    { icon: 'scroll-text', label: 'Go to Devlog', hint: '4', run: () => showView('devlog') },
+    { icon: 'images', label: 'Go to Media', hint: '5', run: () => showView('media') },
+    { icon: 'activity', label: 'Go to Activity', hint: '6', run: () => showView('activity-log') },
+    { icon: 'plus', label: 'New game', run: () => { showView('games'); openGameDialog(null); } },
+    { icon: 'megaphone', label: 'New ad or popup', run: () => { showView('games'); openAdDialog(null); } },
+    { icon: 'download', label: 'Export backup (JSON)', run: exportBackup },
+    { icon: 'rotate-cw', label: 'Refresh data', run: () => { refreshPanel(); loadMedia(); toast('Data refreshed.'); } },
+    { icon: 'log-out', label: 'Sign out', run: signOut },
+  ];
+}
+
+function setPaletteIndex(index) {
+  paletteIndex = index;
+  [...$('paletteList').children].forEach((li, i) => li.classList.toggle('active', i === index));
+  const active = $('paletteList').children[index];
+  if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest' });
+}
+
+function renderPalette(query) {
+  const list = $('paletteList');
+  const q = query.trim().toLowerCase();
+  paletteItems = paletteCommands().filter(cmd => !q || cmd.label.toLowerCase().includes(q));
+  paletteIndex = 0;
+  if (!paletteItems.length) {
+    list.replaceChildren(make('li', 'palette-empty', 'No commands match.'));
+    return;
+  }
+  list.replaceChildren(...paletteItems.map((cmd, index) => {
+    const li = make('li');
+    li.setAttribute('role', 'option');
+    li.append(iconEl(cmd.icon), make('span', 'palette-label', cmd.label));
+    if (cmd.hint) li.append(make('span', 'palette-hint', cmd.hint));
+    li.addEventListener('click', () => runPalette(index));
+    li.addEventListener('mousemove', () => { if (paletteIndex !== index) setPaletteIndex(index); });
+    return li;
+  }));
+  refreshIcons();
+}
+
+function movePalette(delta) {
+  if (!paletteItems.length) return;
+  setPaletteIndex((paletteIndex + delta + paletteItems.length) % paletteItems.length);
+}
+
+function runPalette(index) {
+  const cmd = paletteItems[index];
+  if (!cmd) return;
+  $('palette').close();
+  cmd.run();
+}
+
+function openPalette() {
+  if ($('panelView').hidden) return;
+  $('paletteInput').value = '';
+  renderPalette('');
+  $('palette').showModal();
+  $('paletteInput').focus();
+}
+
+$('paletteInput').addEventListener('input', () => renderPalette($('paletteInput').value));
+$('paletteInput').addEventListener('keydown', event => {
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    movePalette(1);
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    movePalette(-1);
+  } else if (event.key === 'Enter') {
+    event.preventDefault();
+    runPalette(paletteIndex);
+  }
+});
+$('sidePalette').addEventListener('click', openPalette);
+$('topPalette').addEventListener('click', openPalette);
+
+// ===== Keyboard shortcuts =====
+document.addEventListener('keydown', event => {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault();
+    if ($('palette').open) $('palette').close();
+    else openPalette();
+    return;
+  }
+  if (event.altKey || event.ctrlKey || event.metaKey) return;
+  if ($('panelView').hidden) return;
+  const target = event.target;
+  if (target && typeof target.closest === 'function' && (target.closest('input, textarea, select') || target.isContentEditable)) return;
+  if (document.querySelector('dialog[open]')) return;
+  const index = '123456'.indexOf(event.key);
+  if (index > -1 && VIEWS[index]) showView(VIEWS[index]);
+});
+
+// ===== Activity controls =====
+$('activitySearch').addEventListener('input', renderActivityLog);
+$('activityTypeSeg').addEventListener('click', event => {
+  const button = event.target.closest('button[data-group]');
+  if (!button) return;
+  $('activityTypeSeg').querySelectorAll('button').forEach(node => node.setAttribute('aria-pressed', String(node === button)));
+  renderActivityLog();
+});
 
 // ===== Opening animation =====
 // Shows once per browser session. It leaves when the sign-in check has finished, with a minimum time on screen.

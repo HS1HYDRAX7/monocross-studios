@@ -148,6 +148,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 input[type="checkbox"] { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); flex-shrink: 0; }
 
+/* Scrollbars */
+html { scrollbar-width: thin; scrollbar-color: #2c2c2c transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 99px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+::-webkit-scrollbar-corner { background: transparent; }
+
 /* Status and feedback */
 .live {
   display: inline-flex;
