@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apply · Monocross Studios</title>
+<meta name="description" content="Join Monocross Studios. Tell us what you make and how you work.">
+<link rel="canonical" href="https://monocross-studios.vercel.app/apply">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Apply · Monocross Studios">
+<meta property="og:description" content="Fast, raw games built by a small team.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#070707">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2032%2032%27%3E%3Crect%20width=%2732%27%20height=%2732%27%20fill=%27%23070707%27/%3E%3Ctext%20x=%2716%27%20y=%2723%27%20font-size=%2720%27%20font-weight=%27900%27%20text-anchor=%27middle%27%20fill=%27%23ff3b3f%27%20font-family=%27Arial%27%3EM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<style>
+.apply-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 24px; padding-bottom: 8px; }
+.apply-back { color: var(--text-muted); text-decoration: none; font-size: 14px; }
+.apply-back:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<header class="container apply-top">
+  <a class="logo" href="/" aria-label="Monocross Studios home">Mono<b>cross</b></a>
+  <a class="apply-back" href="/">Back to the studio</a>
+</header>
+<main>
+  <section class="section" id="join" aria-labelledby="join-title">
+    <div class="container">
+      <header class="section-head">
+        <div>
+          <p class="eyebrow">Careers</p>
+          <h2 class="section-title" id="join-title">Join the crew</h2>
+        </div>
+        <p class="section-lead">Tell us what you make and how you work. Every application gets read.</p>
+      </header>
+
+      <form class="apply-form" id="applyForm" novalidate>
+        <fieldset class="apply-block">
+          <legend>Basics</legend>
+          <div class="apply-grid">
+            <div class="field" data-field="name">
+              <label for="applyName">Name</label>
+              <input id="applyName" name="name" maxlength="80" autocomplete="name" aria-describedby="err-name">
+              <p class="field-error" id="err-name" hidden></p>
+            </div>
+            <div class="field" data-field="email">
+              <label for="applyEmail">Email</label>
+              <input id="applyEmail" name="email" type="email" maxlength="120" autocomplete="email" aria-describedby="err-email">
+              <p class="field-error" id="err-email" hidden></p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="apply-block" data-field="roles">
+          <legend>Roles</legend>
+          <p class="apply-hint">Pick every role that fits you.</p>
+          <div id="rolesPicker"></div>
+          <p class="field-error" id="err-roles" hidden></p>
+        </fieldset>
+
+        <fieldset class="apply-block" data-field="languages">
+          <legend>Languages</legend>
+          <p class="apply-hint">Pick every language you can work in.</p>
+          <div id="languagesPicker"></div>
+          <p class="field-error" id="err-languages" hidden></p>
+        </fieldset>
+
+        <fieldset class="apply-block">
+          <legend>Tools</legend>
+          <p class="apply-hint">The software you use day to day.</p>
+          <div id="toolsPicker"></div>
+          <div class="field">
+            <label for="applyOtherTools">Anything else</label>
+            <input id="applyOtherTools" name="otherTools" maxlength="120">
+          </div>
+        </fieldset>
+
+        <fieldset class="apply-block">
+          <legend>Availability</legend>
+          <div class="field" data-field="availability">
+            <label for="applyAvailability">When and how much can you work?</label>
+            <input id="applyAvailability" name="availability" maxlength="200" aria-describedby="err-availability">
+            <p class="field-error" id="err-availability" hidden></p>
+          </div>
+        </fieldset>
+
+        <details class="apply-more">
+          <summary>Experience, portfolio and notes (optional)</summary>
+          <div class="apply-grid">
+            <div class="field" data-field="portfolio">
+              <label for="applyPortfolio">Portfolio or work link (https://)</label>
+              <input id="applyPortfolio" name="portfolio" type="url" maxlength="500" inputmode="url" aria-describedby="err-portfolio">
+              <p class="field-error" id="err-portfolio" hidden></p>
+            </div>
+            <div class="field">
+              <label for="applyExperience">Experience</label>
+              <textarea id="applyExperience" name="experience" maxlength="1500"></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <label for="applyNotes">Anything else</label>
+            <textarea id="applyNotes" name="notes" maxlength="1000"></textarea>
+          </div>
+        </details>
+
+        <div class="apply-hp" aria-hidden="true">
+          <label>Website <input name="website" tabindex="-1" autocomplete="off"></label>
+        </div>
+
+        <div class="apply-submit">
+          <p class="apply-status" id="applyStatus" role="status" aria-live="polite"></p>
+          <button class="btn btn-primary" type="submit" id="applySubmit" disabled>Review and submit</button>
+        </div>
+      </form>
+    </div>
+
+    <dialog class="terms-dialog" id="termsDialog" aria-labelledby="termsTitle">
+      <form method="dialog" class="terms-body">
+        <h3 id="termsTitle">Before submitting</h3>
+        <p>Please confirm that you understand the application terms. Monocross Studios does not guarantee payment for work created before the Studio received financial support or before a paid agreement was established. Previous work may be reviewed as part of your portfolio or contribution history, but it is not automatically eligible for retroactive payment. Any future paid work will depend on the applicable agreement at that time.</p>
+        <p>Submitting an application does not create a paid job or contract.</p>
+        <label class="terms-check">
+          <input type="checkbox" id="termsAgree">
+          <span>I have read and agree to these terms.</span>
+        </label>
+        <div class="terms-actions">
+          <button class="btn btn-secondary" type="submit" value="cancel">Cancel</button>
+          <button class="btn btn-primary" type="button" id="termsSubmit" disabled>I Agree &amp; Submit</button>
+        </div>
+      </form>
+    </dialog>
+  </section>
+</main>
+<script src="/apply.js"></script>
+</body>
+</html>
